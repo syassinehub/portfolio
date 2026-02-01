@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Wafa MALIK - Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Globe (three + globe.gl will be loaded by js/globe.js) -->
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Navigation -->
+    <nav id="navbar" class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
+                    Dr. Wafa MALIK
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <button onclick="showPage('home')" class="nav-link px-3 py-2 rounded-lg transition-all">Accueil</button>
+                    <button onclick="showPage('publications')" class="nav-link px-3 py-2 rounded-lg transition-all">Publications</button>
+                    <button onclick="showPage('collaborators')" class="nav-link px-3 py-2 rounded-lg transition-all">Collaborateurs</button>
+                    <button onclick="showPage('teaching')" class="nav-link px-3 py-2 rounded-lg transition-all">Enseignement</button>
+                    <button onclick="showPage('outreach')" class="nav-link px-3 py-2 rounded-lg transition-all">Outreach</button>
+                    
+                    <!-- User Menu -->
+                    <div id="user-menu-desktop">
+                        <!-- Not logged in -->
+                        <div id="user-not-logged" class="flex gap-2">
+                            <button onclick="showLoginModal()" class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition">
+                                Connexion
+                            </button>
+                            <button onclick="showRegisterModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                Inscription
+                            </button>
+                        </div>
+                        
+                        <!-- Logged in -->
+                        <div id="user-logged" class="hidden flex items-center gap-3">
+                            <span id="user-name-display" class="text-gray-700"></span>
+                            <button onclick="handleLogout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                                Déconnexion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <button onclick="showPage('home')" class="mobile-nav-link block w-full text-left px-4 py-3">Accueil</button>
+            <button onclick="showPage('publications')" class="mobile-nav-link block w-full text-left px-4 py-3">Publications</button>
+            <button onclick="showPage('collaborators')" class="mobile-nav-link block w-full text-left px-4 py-3">Collaborateurs</button>
+            <button onclick="showPage('teaching')" class="mobile-nav-link block w-full text-left px-4 py-3">Enseignement</button>
+            <button onclick="showPage('outreach')" class="mobile-nav-link block w-full text-left px-4 py-3">Outreach</button>
+            
+            <!-- User Menu Mobile -->
+            <div class="border-t p-4">
+                <div id="user-not-logged-mobile" class="space-y-2">
+                    <button onclick="showLoginModal()" class="w-full px-4 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition">
+                        Connexion
+                    </button>
+                    <button onclick="showRegisterModal()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Inscription
+                    </button>
+                </div>
+                
+                <div id="user-logged-mobile" class="hidden space-y-2">
+                    <p id="user-name-display-mobile" class="text-gray-700 font-semibold mb-2"></p>
+                    <button onclick="handleLogout()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-900">Connexion</h2>
+                <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <!-- Google sign-in removed -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-semibold">Email</label>
+                    <input type="email" id="login-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-semibold">Mot de passe</label>
+                    <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                    Se connecter
+                </button>
+                <p class="mt-4 text-center text-gray-600 text-sm">
+                    Pas encore de compte ? 
+                    <button type="button" onclick="switchToRegister()" class="text-green-600 hover:underline">
+                        S'inscrire
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-900">Inscription</h2>
+                <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <!-- Google sign-up removed -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-semibold">Prénom</label>
+                        <input type="text" id="register-firstname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 mb-2 font-semibold">Nom</label>
+                        <input type="text" id="register-lastname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-semibold">Email</label>
+                    <input type="email" id="register-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2 font-semibold">Mot de passe</label>
+                    <input type="password" id="register-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required minlength="6">
+                    <p class="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                    Créer mon compte
+                </button>
+                <p class="mt-4 text-center text-gray-600 text-sm">
+                    Déjà un compte ? 
+                    <button type="button" onclick="switchToLogin()" class="text-green-600 hover:underline">
+                        Se connecter
+                    </button>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        
+        <!-- Home Page -->
+        <div id="home-page" class="page-content active">
+            <!-- Hero Section -->
+            <div class="relative h-96 bg-gradient-to-br from-green-600 via-teal-500 to-blue-500 overflow-hidden">
+                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center text-white z-10 px-4">
+                        <h1 class="text-5xl md:text-6xl font-bold mb-4">Dr. Wafa MALIK</h1>
+                        <p class="text-xl md:text-2xl mb-2">Ingénieure Agronome - Chercheuse</p>
+                        <p class="text-lg opacity-90">CIRAD, Montpellier, France</p>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="max-w-5xl mx-auto px-4 py-12">
+                <div class="bg-white rounded-2xl shadow-xl p-8 -mt-24 relative z-10">
+                    <div class="home-profile-section">
+                        <div class="home-profile-left">
+                            <div class="home-profile-image-container">
+                                <img src="assets/profile.png" alt="Photo de Dr. Wafa MALIK" class="home-profile-image">
+                            </div>
+                            <!-- replaced name with social icons stack -->
+                            <div class="home-social-icons">
+                                <a href="https://www.linkedin.com/in/wafa-malik-research/" class="home-social-icon" title="LinkedIn">
+                                    <img src="assets/linkedin.png"  alt="LinkedIn">
+                                </a>
+                                <a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&hl=fr&oi=ao" class="home-social-icon" title="ORCID">
+                                    <img src="assets/google.png"  alt="ORCID">
+                                </a>
+                                <a href="https://www.researchgate.net/profile/Malik-Wafa" class="home-social-icon" title="Twitter">
+                                    <img src="assets/ResearchGate.png"  alt="Twitter">
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="home-profile-right">
+                            <p class="text-gray-700 leading-relaxed mb-6 text-lg">
+                                Ma recherche se concentre sur les impacts des activités agricoles et du changement climatique sur la qualité de l'eau et les processus biogéochimiques de l'azote aux échelles de terrain et de bassin versant. J'utilise des modèles agro-hydrologiques de culture et distribués pour évaluer comment l'utilisation des terres et les pratiques agricoles affectent la dynamique de l'azote dans les paysages ruraux sous les scénarios climatiques et agricoles actuels et futurs.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Expertise section moved to full width under profile -->
+                    <h2 class="text-3xl font-bold text-green-800 mb-6 mt-6">Mon expertise scientifique</h2>
+                    <div class="grid gap-4">
+                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-gray-800">Impacts et adaptations au changement climatique</p>
+                        </div>
+                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-gray-800">Qualité de l'eau et évaluation environnementale intégrée</p>
+                        </div>
+                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-gray-800">Modélisation des cultures et modélisation hydrologique (SWAT, TNT2, TOPMODEL+STICS, DSSAT, MAELIA)</p>
+                        </div>
+                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-gray-800">Évaluation du cycle de vie territorial</p>
+                        </div>
+                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                            <p class="text-gray-800">Systèmes d'aide à la décision pour les décideurs politiques</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publications Page -->
+        <div id="publications-page" class="page-content">
+            <div class="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
+                <div class="max-w-6xl mx-auto px-4">
+                    <h1 class="text-5xl font-bold mb-4">Publications</h1>
+                    <p class="text-xl opacity-90">Recherches et contributions scientifiques</p>
+                </div>
+            </div>
+            <div class="max-w-6xl mx-auto px-4 py-12">
+                <div id="publications-list" class="grid gap-8">
+                    <p class="text-center text-gray-500">Chargement des publications...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collaborators Page -->
+        <div id="collaborators-page" class="page-content">
+            <div class="bg-gradient-to-r from-teal-600 to-green-600 text-white py-16">
+                <div class="max-w-6xl mx-auto px-4">
+                    <h1 class="text-5xl font-bold mb-4">Collaborateurs</h1>
+                    <p class="text-xl opacity-90">Réseau international de recherche</p>
+                </div>
+            </div>
+            <!-- Globe showing universities/locations (predefined in JS) -->
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <div id="globe-wrapper">
+                    <div id="globe-container" class="rounded-lg overflow-hidden shadow-lg mb-6"></div>
+                    <div id="globe-popup" class="globe-popup hidden" aria-hidden="true">
+                        <div class="popup-body">
+                            <img id="globe-popup-img" src="" alt="">
+                            <div class="popup-text">
+                                <div class="name" id="globe-popup-name"></div>
+                                <div class="location" id="globe-popup-location"></div>
+                            </div>
+                        </div>
+                        <div class="popup-desc" id="globe-popup-desc"></div>
+                        <button class="popup-close" id="globe-popup-close">✕</button>
+                    </div>
+                </div>
+            </div>
+            <div class="max-w-6xl mx-auto px-4 py-12">
+                <div id="collaborators-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <p class="text-center text-gray-500">Chargement des collaborateurs...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teaching Page -->
+        <div id="teaching-page" class="page-content">
+            <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white py-16">
+                <div class="max-w-6xl mx-auto px-4">
+                    <h1 class="text-5xl font-bold mb-4">Enseignement</h1>
+                    <p class="text-xl opacity-90">Formation et transmission des connaissances</p>
+                </div>
+            </div>
+            <div class="max-w-6xl mx-auto px-4 py-12">
+                <div id="teaching-list" class="grid md:grid-cols-2 gap-8">
+                    <p class="text-center text-gray-500">Chargement des enseignements...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outreach Page -->
+        <div id="outreach-page" class="page-content">
+            <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
+                <div class="max-w-6xl mx-auto px-4">
+                    <h1 class="text-5xl font-bold mb-4">Outreach</h1>
+                    <p class="text-xl opacity-90">Communication et vulgarisation scientifique</p>
+                </div>
+            </div>
+
+            <!-- Comments page removed: starting fresh later if needed -->
+            <div class="max-w-6xl mx-auto px-4 py-12">
+                <div id="outreach-list" class="space-y-8">
+                    <p class="text-center text-gray-500">Chargement des contenus...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p class="mb-2">© 2024 Dr. Wafa MALIK - Tous droits réservés</p>
+            <p class="text-gray-400 text-sm">CIRAD, Montpellier, France</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Globe.gl (UMD) - includes a compatible Three.js build internally; load Globe.gl first to avoid multiple Three instances -->
+    <script src="https://unpkg.com/globe.gl@2.22.0/dist/globe.gl.min.js"></script>
+    <script src="js/globe.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- OAuth provider setup modal removed -->
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
