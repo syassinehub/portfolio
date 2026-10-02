@@ -254,7 +254,7 @@ async function initCollaborators() {
         if (!loc) return showOverview();
         showLocation(loc);
         // Sur mobile le panneau est sous le globe : on l'amène à l'écran
-        if (window.matchMedia('(max-width: 960px)').matches) side.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (window.matchMedia('(max-width: 960px)').matches && !globeCtl?.isExpanded()) side.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     side.addEventListener('click', (e) => {
@@ -272,6 +272,7 @@ async function initCollaborators() {
         }
         const filterBtn = e.target.closest('[data-filter-location]');
         if (filterBtn) {
+            globeCtl?.collapse();
             filters.location = locations.find((l) => l.key === filterBtn.dataset.filterLocation);
             filters.country = '';
             update();

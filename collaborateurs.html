@@ -56,8 +56,26 @@
 
         <section class="section section-tight">
             <div class="container">
-                <div class="globe-panel">
-                    <div id="globe" class="globe" role="img" aria-label="Globe interactif des collaborations"></div>
+                <div id="globe-panel" class="globe-panel">
+                    <div class="globe-stage">
+                        <div id="globe" class="globe" role="img" aria-label="Globe interactif des collaborations"></div>
+                        <div class="globe-tools" role="toolbar" aria-label="Contrôles du globe">
+                            <button type="button" data-globe="in" aria-label="Zoomer" title="Zoomer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            </button>
+                            <button type="button" data-globe="out" aria-label="Dézoomer" title="Dézoomer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
+                            </button>
+                            <button type="button" data-globe="home" aria-label="Vue d'ensemble" title="Vue d'ensemble">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.2 2.4 3.3 5 3.3 8s-1.1 5.6-3.3 8c-2.2-2.4-3.3-5-3.3-8S9.8 6.4 12 4z"/></svg>
+                            </button>
+                            <button type="button" data-globe="expand" aria-label="Plein écran" title="Plein écran" aria-pressed="false">
+                                <svg class="icon-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                                <svg class="icon-collapse" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+                            </button>
+                        </div>
+                        <p id="globe-help" class="globe-help"></p>
+                    </div>
                     <aside id="globe-side" class="globe-side" aria-live="polite">
                         <div class="globe-side-inner">
                             <p class="globe-hint">Cliquez sur un point du globe ou choisissez un lieu.</p>

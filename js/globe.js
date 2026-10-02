@@ -121,14 +121,38 @@ function initGlobe(container, locations, onSelect) {
     });
 }
 
+// Altitude caméra (en rayons terrestres) : bornes du zoom
+const ALT_MIN = 0.35;
+const ALT_MAX = 3.2;
+const ALT_HOME = 2.1;
+const ALT_FOCUS = 1.2;
+const ALT_LABELS = 1.3; // en dessous : noms des lieux affichés
+
 function buildGlobe(container, locations, onSelect) {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    const panel = container.closest('.globe-panel');
+    const help = panel?.querySelector('.globe-help');
     const arcs = locations.map((l) => ({ startLat: HOME.lat, startLng: HOME.lng, endLat: l.lat, endLng: l.lng }));
     const markers = [{ ...HOME, home: true, people: [] }, ...locations];
+    const shortName = (d) => (d.home ? 'Montpellier' : d.cities.length === 1 ? d.cities[0] : d.country);
     let selected = null;
+    let hovered = null;
+    let expanded = false;
+    let idleTimer;
+    let zoomScale = 1; // les points rétrécissent quand on zoome
 
-    const radius = (d) => (d.home ? 0.55 : 0.5 + Math.min(d.people.length, 6) * 0.1);
-    const color = (d) => (d.home ? '#e8b05c' : d === selected ? '#e8b05c' : '#ffffff');
+    // Points plus gros au doigt pour être faciles à toucher
+    const scale = touch ? 1.5 : 1;
+    const radius = (d) => scale * zoomScale * (d.home ? 0.55 : 0.5 + Math.min(d.people.length, 6) * 0.1) * (d === hovered ? 1.35 : 1);
+    const color = (d) => (d.home || d === selected ? '#e8b05c' : d === hovered ? '#9fd3b8' : '#ffffff');
+    const altitude = (d) => (d === selected ? 0.06 : d === hovered ? 0.04 : 0.02);
+
+    const select = (d) => {
+        if (!d || d.home) return;
+        focus(d);
+        onSelect(d);
+    };
 
     const globe = Globe()(container)
         .backgroundColor('rgba(0,0,0,0)')
@@ -145,57 +169,158 @@ function buildGlobe(container, locations, onSelect) {
         .arcDashAnimateTime(reduceMotion ? 0 : 3200)
         .pointsData(markers)
         .pointColor(color)
-        .pointAltitude((d) => (d === selected ? 0.06 : 0.02))
+        .pointAltitude(altitude)
         .pointRadius(radius)
         .pointsMerge(false)
-        .pointsTransitionDuration(300)
-        .pointLabel((d) => `
+        .pointsTransitionDuration(250)
+        .pointLabel((d) => (touch ? '' : `
             <div class="globe-tip">
                 <strong>${esc(d.label)}</strong>
                 <span>${d.home ? 'Base de recherche' : `${d.people.length} collaborateur${d.people.length > 1 ? 's' : ''} · cliquer pour voir`}</span>
-            </div>`)
-        .onPointHover((d) => { container.style.cursor = d && !d.home ? 'pointer' : ''; })
-        .onPointClick((d) => {
-            if (d.home) return;
-            focus(d);
-            onSelect(d);
+            </div>`))
+        .onPointHover((d) => {
+            hovered = d && !d.home ? d : null;
+            container.style.cursor = hovered ? 'pointer' : '';
+            refresh();
         })
+        .onPointClick(select)
+        .labelsData([])
+        .labelText(shortName)
+        .labelSize(0.55)
+        .labelDotRadius(radius)
+        .labelDotOrientation(() => 'right')
+        .labelAltitude(0.021)
+        .labelColor((d) => (d.home || d === selected ? '#e8b05c' : 'rgba(255, 255, 255, 0.92)'))
+        .labelResolution(3)
+        .onLabelClick(select)
         .ringsData([])
         .ringColor(() => (t) => `rgba(232, 176, 92, ${1 - t})`)
         .ringMaxRadius(4)
         .ringPropagationSpeed(2.5)
         .ringRepeatPeriod(reduceMotion ? 0 : 1200)
         .onGlobeClick(() => {
+            if (!selected) return;
             reset();
             onSelect(null);
+        })
+        .onZoom(({ altitude: alt }) => {
+            const next = Math.round(Math.min(1, Math.max(0.3, alt / ALT_HOME)) * 10) / 10;
+            if (next !== zoomScale) {
+                zoomScale = next;
+                globe.pointRadius(radius).labelDotRadius(radius);
+            }
+            const showLabels = alt < ALT_LABELS;
+            if (showLabels !== globe.labelsData().length > 0) globe.labelsData(showLabels ? markers : []);
         });
 
+    // --- Contrôles caméra -------------------------------------------------
     const controls = globe.controls();
-    controls.enableZoom = false; // la molette reste au défilement de la page
+    const R = globe.getGlobeRadius();
+    controls.enableZoom = true;
+    controls.minDistance = R * (1 + ALT_MIN);
+    controls.maxDistance = R * (1 + ALT_MAX);
+    controls.zoomSpeed = 0.8;
+    controls.rotateSpeed = 0.6;
+    controls.enableDamping = true;
     controls.autoRotate = !reduceMotion;
     controls.autoRotateSpeed = 0.35;
-    globe.pointOfView({ lat: 30, lng: -30, altitude: 2.1 });
+    globe.pointOfView({ lat: 30, lng: -30, altitude: ALT_HOME });
 
+    // La rotation auto s'arrête pendant l'interaction et reprend après 6 s d'inactivité
+    controls.addEventListener('start', () => {
+        clearTimeout(idleTimer);
+        controls.autoRotate = false;
+    });
+    controls.addEventListener('end', () => {
+        clearTimeout(idleTimer);
+        if (!selected && !reduceMotion) idleTimer = setTimeout(() => { controls.autoRotate = true; }, 6000);
+    });
+
+    // Molette : zoom seulement avec Ctrl/⌘ (ou en plein écran), sinon la page défile normalement
+    container.addEventListener('wheel', (e) => {
+        if (expanded || e.ctrlKey || e.metaKey) return;
+        e.stopPropagation();
+        flashHelp();
+    }, { capture: true, passive: true });
+
+    // Tactile : glisser vertical = défiler la page ; horizontal = tourner ; pincer = zoomer.
+    // En plein écran, le globe capte tous les gestes.
+    const canvas = globe.renderer().domElement;
+    const applyTouchMode = () => { canvas.style.touchAction = expanded ? 'none' : 'pan-y'; };
+    applyTouchMode();
+
+    function zoomBy(factor) {
+        const { altitude: alt } = globe.pointOfView();
+        globe.pointOfView({ altitude: Math.min(ALT_MAX, Math.max(ALT_MIN, alt * factor)) }, 450);
+    }
+
+    // --- Aide contextuelle ----------------------------------------------
+    const helpText = () => {
+        if (touch) return expanded ? 'Glisser pour tourner · pincer pour zoomer' : 'Pincer pour zoomer · ⤢ plein écran';
+        return expanded ? 'Glisser pour tourner · molette pour zoomer · Échap pour fermer' : 'Glisser pour tourner · Ctrl + molette pour zoomer';
+    };
+    let helpTimer;
+    function flashHelp() {
+        if (!help) return;
+        help.classList.add('flash');
+        clearTimeout(helpTimer);
+        helpTimer = setTimeout(() => help.classList.remove('flash'), 1600);
+    }
+    if (help) help.textContent = helpText();
+
+    // --- Plein écran (overlay CSS : fonctionne aussi sur iPhone) -------------
+    const expandBtn = panel?.querySelector('[data-globe="expand"]');
+    function setExpanded(value) {
+        expanded = value;
+        panel?.classList.toggle('expanded', value);
+        document.body.classList.toggle('globe-open', value);
+        expandBtn?.setAttribute('aria-pressed', String(value));
+        expandBtn?.setAttribute('aria-label', value ? 'Quitter le plein écran' : 'Plein écran');
+        applyTouchMode();
+        if (help) help.textContent = helpText();
+        requestAnimationFrame(resize);
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && expanded) setExpanded(false);
+    });
+
+    panel?.querySelector('.globe-tools')?.addEventListener('click', (e) => {
+        const action = e.target.closest('[data-globe]')?.dataset.globe;
+        if (action === 'in') zoomBy(0.65);
+        if (action === 'out') zoomBy(1.5);
+        if (action === 'home') {
+            reset();
+            onSelect(null);
+        }
+        if (action === 'expand') setExpanded(!expanded);
+    });
+
+    // --- Sélection --------------------------------------------------------
     function refresh() {
-        globe.pointColor(color).pointAltitude((d) => (d === selected ? 0.06 : 0.02));
+        globe.pointColor(color).pointAltitude(altitude).pointRadius(radius);
+        if (globe.labelsData().length) globe.labelsData([...markers]);
         globe.ringsData(selected ? [selected] : []);
     }
 
     function focus(location) {
         selected = markers.find((m) => m.key === location.key) || null;
+        clearTimeout(idleTimer);
         controls.autoRotate = false;
-        globe.pointOfView({ lat: location.lat, lng: location.lng, altitude: 1.5 }, 1000);
+        const { altitude: alt } = globe.pointOfView();
+        globe.pointOfView({ lat: location.lat, lng: location.lng, altitude: Math.min(alt, ALT_FOCUS) }, 1000);
         refresh();
     }
 
     function reset() {
         selected = null;
         controls.autoRotate = !reduceMotion;
-        globe.pointOfView({ altitude: 2.1 }, 800);
+        globe.pointOfView({ altitude: ALT_HOME }, 800);
         refresh();
     }
 
-    const resize = () => globe.width(container.clientWidth).height(container.clientHeight);
+    function resize() {
+        globe.width(container.clientWidth).height(container.clientHeight);
+    }
     new ResizeObserver(resize).observe(container);
     resize();
 
@@ -205,5 +330,5 @@ function buildGlobe(container, locations, onSelect) {
         else globe.pauseAnimation();
     }).observe(container);
 
-    return { focus, reset };
+    return { focus, reset, collapse: () => setExpanded(false), isExpanded: () => expanded };
 }
