@@ -72,31 +72,6 @@ function plural(n, word) {
 
 const normalize = (value) => String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-// --- Accueil ------------------------------------------------------------
-
-async function initHome() {
-    const [collaborators, ...counts] = await Promise.allSettled([
-        Content.list('collaborators'),
-        Content.count('publications'),
-        Content.count('teaching'),
-        Content.count('outreach'),
-    ]);
-    const people = collaborators.status === 'fulfilled' ? collaborators.value : [];
-    const value = (r) => (r.status === 'fulfilled' ? r.value : '—');
-    const stats = {
-        publications: value(counts[0]),
-        teaching: value(counts[1]),
-        outreach: value(counts[2]),
-        collaborators: collaborators.status === 'fulfilled' ? people.length : '—',
-        countries: collaborators.status === 'fulfilled'
-            ? new Set(people.map((c) => (c.country || '').trim()).filter(Boolean)).size
-            : '—',
-    };
-    document.querySelectorAll('[data-stat]').forEach((el) => {
-        el.textContent = stats[el.dataset.stat];
-    });
-}
-
 // --- Publications -------------------------------------------------------
 
 function highlightOwner(authors) {
@@ -396,7 +371,6 @@ async function initOutreach() {
 // --- Initialisation -----------------------------------------------------
 
 const PAGES = {
-    home: initHome,
     publications: initPublications,
     collaborators: initCollaborators,
     teaching: initTeaching,

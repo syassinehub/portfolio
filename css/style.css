@@ -273,22 +273,31 @@ button { font: inherit; color: inherit; cursor: pointer; }
     gap: 12px;
     margin-top: 36px;
 }
-.hero-stats {
+.hero-links {
     display: flex;
-    gap: clamp(24px, 5vw, 56px);
-    margin: 48px 0 0;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 44px;
     padding-top: 28px;
     border-top: 1px solid rgba(255, 255, 255, .14);
 }
-.hero-stats div { display: flex; flex-direction: column-reverse; }
-.hero-stats dt { font-size: 13px; color: rgba(255, 255, 255, .6); }
-.hero-stats dd {
-    margin: 0;
-    font-family: var(--serif);
-    font-size: 40px;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
+.hero-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 8px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #fff;
+    text-decoration: none;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 999px;
+    transition: background .2s, border-color .2s, transform .2s var(--ease);
 }
+.hero-links a:hover { background: rgba(255, 255, 255, .12); border-color: var(--mint); transform: translateY(-1px); }
+.hero-links img { width: 28px; height: 28px; padding: 3px; background: #fff; border-radius: 50%; object-fit: contain; }
+.hero-links a::after { content: '↗'; color: var(--mint); font-size: 13px; }
 
 .hero-portrait {
     margin: 0;
@@ -814,7 +823,7 @@ a.collab:hover .arrow { opacity: 1; }
     transition: transform .3s var(--ease), box-shadow .3s, border-color .3s;
 }
 .explore-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--mint); }
-.explore-count { font-family: var(--serif); font-size: 52px; line-height: 1; color: var(--moss); font-variant-numeric: tabular-nums; }
+.explore-icon { width: 40px; height: 40px; fill: none; stroke: var(--moss); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .explore-card h3 { margin-top: 36px; font-family: var(--serif); font-weight: 600; font-size: 24px; }
 .explore-card p { font-size: 14.5px; color: var(--muted); }
 .explore-go {
@@ -831,7 +840,7 @@ a.collab:hover .arrow { opacity: 1; }
 }
 .explore-card:hover .explore-go { background: var(--forest); color: #fff; transform: translateX(3px); }
 .explore-card-dark { color: #fff; background: var(--forest); border-color: var(--forest); }
-.explore-card-dark .explore-count { color: var(--amber); }
+.explore-card-dark .explore-icon { stroke: var(--amber); }
 .explore-card-dark p { color: rgba(255, 255, 255, .7); }
 .explore-card-dark .explore-go { border-color: rgba(255, 255, 255, .25); }
 .explore-card-dark:hover .explore-go { background: var(--mint); color: var(--forest); }
@@ -964,7 +973,6 @@ a.collab:hover .arrow { opacity: 1; }
     .pub-thumb { display: none; }
     .teach { grid-template-columns: 1fr; }
     .teach img { height: 180px; }
-    .hero-stats dd { font-size: 32px; }
     .explore { grid-template-columns: 1fr; }
     .globe { height: 340px; }
     .footer-bottom { flex-direction: column; gap: 8px; }
