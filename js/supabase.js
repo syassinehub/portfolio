@@ -33,6 +33,11 @@ const Content = {
         if (error) throw error;
         return (data || []).sort(SORTERS[table]);
     },
+    async count(table) {
+        const { count, error } = await db.from(table).select('id', { count: 'exact', head: true });
+        if (error) throw error;
+        return count;
+    },
     async insert(table, row) {
         const { data, error } = await db.from(table).insert([row]).select();
         if (error) throw error;

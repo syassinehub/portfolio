@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enseignement — Dr. Wafa Malik</title>
+    <meta name="description" content="Enseignement et formation de Wafa Malik, ingénieure agronome et chercheuse.">
+    <meta name="author" content="Wafa Malik">
+    <meta name="theme-color" content="#16352a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
+    <meta property="og:type" content="profile">
+    <meta property="og:title" content="Enseignement — Dr. Wafa Malik">
+    <meta property="og:description" content="Enseignement et formation de Wafa Malik, ingénieure agronome et chercheuse.">
+    <meta property="og:image" content="assets/profile.jpg">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary">
+
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://vdcpnozdfsmdyiyepnmu.supabase.co" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="teaching">
+    <a class="skip-link" href="#main">Aller au contenu</a>
+
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand" aria-label="Accueil">
+                <span class="brand-mark" aria-hidden="true">WM</span>
+                <span class="brand-name">Wafa Malik</span>
+            </a>
+            <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Ouvrir le menu">
+                <span></span><span></span>
+            </button>
+            <nav id="site-nav" class="site-nav" aria-label="Navigation principale">
+                <a href="index.html">Accueil</a>
+                <a href="publications.html">Publications</a>
+                <a href="collaborateurs.html">Collaborateurs</a>
+                <a href="enseignement.html" aria-current="page">Enseignement</a>
+                <a href="mediation.html">Médiation</a>
+                <a href="#contact" class="nav-cta">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <section class="page-hero">
+            <div class="container">
+                <p class="eyebrow">Enseignement</p>
+                <h1>Enseignement &amp; formation</h1>
+                <p class="page-intro">Parcours de formation, enseignements et transmission des connaissances.</p>
+            </div>
+        </section>
+
+        <section class="section section-tight">
+            <div class="container narrow">
+                <div id="teaching-list" class="teach-list" aria-busy="true">
+                    <div class="skeleton skeleton-card"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact" class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h2>Échangeons.</h2>
+                <p>Collaboration, projet de recherche, intervention ou encadrement : le plus simple est de me contacter via LinkedIn.</p>
+            </div>
+            <ul class="footer-links">
+                <li><a href="https://www.linkedin.com/in/wafa-malik-research/" target="_blank" rel="noopener"><img src="assets/linkedin.png" alt="" width="20" height="20">LinkedIn</a></li>
+                <li><a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" target="_blank" rel="noopener"><img src="assets/google.png" alt="" width="20" height="20">Google Scholar</a></li>
+                <li><a href="https://www.researchgate.net/profile/Malik-Wafa" target="_blank" rel="noopener"><img src="assets/ResearchGate.png" alt="" width="20" height="20">ResearchGate</a></li>
+            </ul>
+        </div>
+        <div class="container footer-bottom">
+            <p>© <span id="year"></span> Wafa Malik · CIRAD, Montpellier</p>
+            <a href="admin.html" class="admin-link">Administration</a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

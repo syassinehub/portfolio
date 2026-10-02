@@ -8,10 +8,9 @@
     <meta name="author" content="Wafa Malik">
     <meta name="theme-color" content="#16352a">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
-
     <meta property="og:type" content="profile">
-    <meta property="og:title" content="Dr. Wafa Malik — Agronome &amp; chercheuse">
-    <meta property="og:description" content="Azote, eau et agriculture face au changement climatique — de la parcelle au bassin versant.">
+    <meta property="og:title" content="Dr. Wafa Malik — Agronome &amp; chercheuse, azote, eau et climat">
+    <meta property="og:description" content="Dr. Wafa Malik, ingénieure agronome et chercheuse au CIRAD (Montpellier). Modélisation agro-hydrologique, cycle de l'azote, qualité de l'eau et adaptation au changement climatique.">
     <meta property="og:image" content="assets/profile.jpg">
     <meta property="og:locale" content="fr_FR">
     <meta name="twitter:card" content="summary">
@@ -21,9 +20,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://vdcpnozdfsmdyiyepnmu.supabase.co" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="preload" as="image" href="assets/profile.webp" type="image/webp">
     <link rel="stylesheet" href="css/style.css">
-
+    <link rel="preload" as="image" href="assets/profile.webp" type="image/webp">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -42,13 +40,12 @@
     }
     </script>
 </head>
-<body>
+<body data-page="home">
     <a class="skip-link" href="#main">Aller au contenu</a>
 
-    <!-- Navigation -->
-    <header class="site-header" id="top">
+    <header class="site-header">
         <div class="container header-inner">
-            <a href="#top" class="brand" aria-label="Accueil">
+            <a href="index.html" class="brand" aria-label="Accueil">
                 <span class="brand-mark" aria-hidden="true">WM</span>
                 <span class="brand-name">Wafa Malik</span>
             </a>
@@ -56,18 +53,17 @@
                 <span></span><span></span>
             </button>
             <nav id="site-nav" class="site-nav" aria-label="Navigation principale">
-                <a href="#recherche">Recherche</a>
-                <a href="#publications">Publications</a>
-                <a href="#collaborations">Collaborations</a>
-                <a href="#enseignement">Enseignement</a>
-                <a href="#mediation">Médiation</a>
+                <a href="index.html" aria-current="page">Accueil</a>
+                <a href="publications.html">Publications</a>
+                <a href="collaborateurs.html">Collaborateurs</a>
+                <a href="enseignement.html">Enseignement</a>
+                <a href="mediation.html">Médiation</a>
                 <a href="#contact" class="nav-cta">Contact</a>
             </nav>
         </div>
     </header>
 
     <main id="main">
-
         <!-- Hero -->
         <section class="hero">
             <svg class="hero-contours" viewBox="0 0 800 600" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
@@ -91,8 +87,8 @@
                         <em>de la parcelle au bassin versant.</em>
                     </p>
                     <div class="hero-actions">
-                        <a href="#publications" class="btn btn-primary">Voir les publications</a>
-                        <a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" class="btn btn-ghost" target="_blank" rel="noopener">Google Scholar ↗</a>
+                        <a href="publications.html" class="btn btn-primary">Voir les publications</a>
+                        <a href="collaborateurs.html" class="btn btn-ghost">Réseau de recherche →</a>
                     </div>
                     <dl class="hero-stats" aria-live="polite">
                         <div><dt>Publications</dt><dd data-stat="publications">—</dd></div>
@@ -117,8 +113,8 @@
         <section id="recherche" class="section">
             <div class="container split">
                 <header class="section-head">
-                    <p class="section-index">01</p>
-                    <h2>Recherche</h2>
+                    <p class="section-index">Recherche</p>
+                    <h2>Comprendre l'azote, protéger l'eau</h2>
                 </header>
                 <div>
                     <p class="lead">
@@ -165,70 +161,45 @@
             </div>
         </section>
 
-        <!-- Publications -->
-        <section id="publications" class="section section-alt">
-            <div class="container split">
-                <header class="section-head">
-                    <p class="section-index">02</p>
-                    <h2>Publications</h2>
-                    <a class="text-link" href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" target="_blank" rel="noopener">Liste complète sur Scholar ↗</a>
-                </header>
-                <div>
-                    <ol id="publications-list" class="pub-list" aria-busy="true">
-                        <li class="skeleton"></li><li class="skeleton"></li>
-                    </ol>
-                </div>
-            </div>
-        </section>
-
-        <!-- Collaborations -->
-        <section id="collaborations" class="section">
+        <!-- Explorer -->
+        <section class="section section-alt">
             <div class="container">
                 <header class="section-head section-head-row">
                     <div>
-                        <p class="section-index">03</p>
-                        <h2>Collaborations</h2>
+                        <p class="section-index">Explorer</p>
+                        <h2>Travaux &amp; engagements</h2>
                     </div>
-                    <p class="section-intro">Un réseau de recherche entre l'Europe, le Maghreb et les Amériques.</p>
                 </header>
-                <div class="globe-panel">
-                    <div id="globe" class="globe" role="img" aria-label="Globe des collaborations internationales"></div>
-                    <ul id="country-legend" class="country-legend"></ul>
-                </div>
-                <div id="collaborators-list" class="collab-groups" aria-busy="true">
-                    <div class="skeleton skeleton-card"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Enseignement -->
-        <section id="enseignement" class="section section-alt">
-            <div class="container split">
-                <header class="section-head">
-                    <p class="section-index">04</p>
-                    <h2>Enseignement &amp; formation</h2>
-                </header>
-                <div id="teaching-list" class="teach-list" aria-busy="true">
-                    <div class="skeleton skeleton-card"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Médiation -->
-        <section id="mediation" class="section">
-            <div class="container split">
-                <header class="section-head">
-                    <p class="section-index">05</p>
-                    <h2>Médiation scientifique</h2>
-                </header>
-                <div id="outreach-list" class="outreach-list" aria-busy="true">
-                    <div class="skeleton skeleton-card"></div>
+                <div class="explore">
+                    <a href="publications.html" class="explore-card reveal">
+                        <span class="explore-count" data-stat="publications">—</span>
+                        <h3>Publications</h3>
+                        <p>Articles scientifiques et manuscrits sur l'azote, l'eau et les systèmes de culture.</p>
+                        <span class="explore-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="collaborateurs.html" class="explore-card explore-card-dark reveal">
+                        <span class="explore-count" data-stat="collaborators">—</span>
+                        <h3>Collaborateurs</h3>
+                        <p>Un réseau international, à explorer sur un globe interactif.</p>
+                        <span class="explore-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="enseignement.html" class="explore-card reveal">
+                        <span class="explore-count" data-stat="teaching">—</span>
+                        <h3>Enseignement</h3>
+                        <p>Formation, parcours et transmission des connaissances.</p>
+                        <span class="explore-go" aria-hidden="true">→</span>
+                    </a>
+                    <a href="mediation.html" class="explore-card reveal">
+                        <span class="explore-count" data-stat="outreach">—</span>
+                        <h3>Médiation</h3>
+                        <p>Podcasts, vidéos et vulgarisation scientifique.</p>
+                        <span class="explore-go" aria-hidden="true">→</span>
+                    </a>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Contact -->
     <footer id="contact" class="site-footer">
         <div class="container footer-grid">
             <div>
@@ -249,7 +220,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
-    <script src="js/globe.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -65,6 +65,10 @@ end $$;
 -- Colonne d'ordre des collaborateurs (utilisée par l'admin)
 alter table public.collaborators add column if not exists position integer;
 
+-- Coordonnées optionnelles pour placer précisément un collaborateur sur le globe
+alter table public.collaborators add column if not exists lat double precision;
+alter table public.collaborators add column if not exists lng double precision;
+
 -- 3. Supprimer l'ancien système d'auth maison ------------------------
 -- La table `users` (emails + hash bcrypt) était lisible publiquement.
 -- Tous les comptes sont supprimés : la connexion repart de zéro avec Supabase Auth.
