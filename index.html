@@ -3,354 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Wafa MALIK - Portfolio</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
+    <title>Dr. Wafa Malik — Agronome &amp; chercheuse, azote, eau et climat</title>
+    <meta name="description" content="Dr. Wafa Malik, ingénieure agronome et chercheuse au CIRAD (Montpellier). Modélisation agro-hydrologique, cycle de l'azote, qualité de l'eau et adaptation au changement climatique.">
+    <meta name="author" content="Wafa Malik">
+    <meta name="theme-color" content="#16352a">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
+
+    <meta property="og:type" content="profile">
+    <meta property="og:title" content="Dr. Wafa Malik — Agronome &amp; chercheuse">
+    <meta property="og:description" content="Azote, eau et agriculture face au changement climatique — de la parcelle au bassin versant.">
+    <meta property="og:image" content="assets/profile.jpg">
+    <meta property="og:locale" content="fr_FR">
+    <meta name="twitter:card" content="summary">
+
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Globe (three + globe.gl will be loaded by js/globe.js) -->
-    
-    <!-- Custom CSS -->
+    <link rel="preconnect" href="https://vdcpnozdfsmdyiyepnmu.supabase.co" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preload" as="image" href="assets/profile.webp" type="image/webp">
     <link rel="stylesheet" href="css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Wafa Malik",
+        "honorificPrefix": "Dr.",
+        "jobTitle": "Ingénieure agronome, chercheuse",
+        "affiliation": { "@type": "Organization", "name": "CIRAD", "address": "Montpellier, France" },
+        "knowsAbout": ["Cycle de l'azote", "Qualité de l'eau", "Modélisation agro-hydrologique", "Changement climatique", "Analyse du cycle de vie territoriale"],
+        "image": "assets/profile.jpg",
+        "sameAs": [
+            "https://www.linkedin.com/in/wafa-malik-research/",
+            "https://scholar.google.com/citations?user=0rNneGUAAAAJ",
+            "https://www.researchgate.net/profile/Malik-Wafa"
+        ]
+    }
+    </script>
 </head>
-<body class="bg-gray-50">
-    
+<body>
+    <a class="skip-link" href="#main">Aller au contenu</a>
+
     <!-- Navigation -->
-    <nav id="navbar" class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <div class="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                    Dr. Wafa MALIK
+    <header class="site-header" id="top">
+        <div class="container header-inner">
+            <a href="#top" class="brand" aria-label="Accueil">
+                <span class="brand-mark" aria-hidden="true">WM</span>
+                <span class="brand-name">Wafa Malik</span>
+            </a>
+            <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Ouvrir le menu">
+                <span></span><span></span>
+            </button>
+            <nav id="site-nav" class="site-nav" aria-label="Navigation principale">
+                <a href="#recherche">Recherche</a>
+                <a href="#publications">Publications</a>
+                <a href="#collaborations">Collaborations</a>
+                <a href="#enseignement">Enseignement</a>
+                <a href="#mediation">Médiation</a>
+                <a href="#contact" class="nav-cta">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+
+        <!-- Hero -->
+        <section class="hero">
+            <svg class="hero-contours" viewBox="0 0 800 600" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+                <g fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M-50 420 C 120 340, 260 470, 420 390 S 700 260, 860 330"/>
+                    <path d="M-50 450 C 130 370, 270 500, 430 420 S 710 290, 860 360"/>
+                    <path d="M-50 480 C 140 400, 280 530, 440 450 S 720 320, 860 390"/>
+                    <path d="M-50 510 C 150 430, 290 560, 450 480 S 730 350, 860 420"/>
+                    <path d="M-50 540 C 160 460, 300 590, 460 510 S 740 380, 860 450"/>
+                    <path d="M-50 120 C 100 60, 240 160, 380 100 S 640 20, 860 80"/>
+                    <path d="M-50 150 C 110 90, 250 190, 390 130 S 650 50, 860 110"/>
+                    <path d="M-50 180 C 120 120, 260 220, 400 160 S 660 80, 860 140"/>
+                </g>
+            </svg>
+            <div class="container hero-grid">
+                <div class="hero-text">
+                    <p class="eyebrow">Ingénieure agronome · Chercheuse · CIRAD Montpellier</p>
+                    <h1>Dr. Wafa Malik</h1>
+                    <p class="hero-lede">
+                        Azote, eau et agriculture face au changement climatique —
+                        <em>de la parcelle au bassin versant.</em>
+                    </p>
+                    <div class="hero-actions">
+                        <a href="#publications" class="btn btn-primary">Voir les publications</a>
+                        <a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" class="btn btn-ghost" target="_blank" rel="noopener">Google Scholar ↗</a>
+                    </div>
+                    <dl class="hero-stats" aria-live="polite">
+                        <div><dt>Publications</dt><dd data-stat="publications">—</dd></div>
+                        <div><dt>Collaborateurs</dt><dd data-stat="collaborators">—</dd></div>
+                        <div><dt>Pays</dt><dd data-stat="countries">—</dd></div>
+                    </dl>
                 </div>
-                
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <button onclick="showPage('home')" class="nav-link px-3 py-2 rounded-lg transition-all">Accueil</button>
-                    <button onclick="showPage('publications')" class="nav-link px-3 py-2 rounded-lg transition-all">Publications</button>
-                    <button onclick="showPage('collaborators')" class="nav-link px-3 py-2 rounded-lg transition-all">Collaborateurs</button>
-                    <button onclick="showPage('teaching')" class="nav-link px-3 py-2 rounded-lg transition-all">Enseignement</button>
-                    <button onclick="showPage('outreach')" class="nav-link px-3 py-2 rounded-lg transition-all">Outreach</button>
-                    
-                    <!-- User Menu -->
-                    <div id="user-menu-desktop">
-                        <!-- Not logged in -->
-                        <div id="user-not-logged" class="flex gap-2">
-                            <button onclick="showLoginModal()" class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg transition">
-                                Connexion
-                            </button>
-                            <button onclick="showRegisterModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                                Inscription
-                            </button>
-                        </div>
-                        
-                        <!-- Logged in -->
-                        <div id="user-logged" class="hidden flex items-center gap-3">
-                            <span id="user-name-display" class="text-gray-700"></span>
-                            <button onclick="handleLogout()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                                Déconnexion
-                            </button>
-                        </div>
+                <figure class="hero-portrait">
+                    <picture>
+                        <source srcset="assets/profile.webp" type="image/webp">
+                        <img src="assets/profile.jpg" alt="Portrait de Wafa Malik" width="480" height="547" fetchpriority="high">
+                    </picture>
+                    <figcaption>
+                        <span class="dot" aria-hidden="true"></span>
+                        CIRAD — Montpellier, France
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <!-- Recherche -->
+        <section id="recherche" class="section">
+            <div class="container split">
+                <header class="section-head">
+                    <p class="section-index">01</p>
+                    <h2>Recherche</h2>
+                </header>
+                <div>
+                    <p class="lead">
+                        Ma recherche porte sur les impacts des activités agricoles et du changement climatique
+                        sur la qualité de l'eau et les processus biogéochimiques de l'azote, à l'échelle de la parcelle
+                        et du bassin versant.
+                    </p>
+                    <p class="body-text">
+                        J'utilise des modèles de culture et des modèles agro-hydrologiques distribués pour évaluer
+                        comment l'usage des terres et les pratiques agricoles influencent la dynamique de l'azote dans
+                        les paysages ruraux, sous des scénarios climatiques et agricoles actuels et futurs.
+                    </p>
+
+                    <ul class="expertise">
+                        <li>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>
+                            <div><h3>Changement climatique</h3><p>Impacts sur les systèmes agricoles et stratégies d'adaptation.</p></div>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>
+                            <div><h3>Qualité de l'eau</h3><p>Évaluation environnementale intégrée, transferts d'azote et eutrophisation.</p></div>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M5 20V10l4-3 4 3v10M13 20V6l3-2 3 2v14"/></svg>
+                            <div><h3>Modélisation</h3><p>Modèles de culture et hydrologiques, de la parcelle au territoire.</p></div>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+                            <div><h3>Cycle de vie territorial</h3><p>Analyse du cycle de vie appliquée aux territoires agricoles.</p></div>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>
+                            <div><h3>Aide à la décision</h3><p>Outils pour éclairer les politiques publiques et les acteurs du territoire.</p></div>
+                        </li>
+                    </ul>
+
+                    <div class="models">
+                        <p class="models-label">Modèles utilisés</p>
+                        <ul class="chips">
+                            <li>SWAT</li><li>TNT2</li><li>TOPMODEL + STICS</li><li>DSSAT</li><li>MAELIA</li>
+                        </ul>
                     </div>
                 </div>
-
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
-                </button>
             </div>
-        </div>
+        </section>
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
-            <button onclick="showPage('home')" class="mobile-nav-link block w-full text-left px-4 py-3">Accueil</button>
-            <button onclick="showPage('publications')" class="mobile-nav-link block w-full text-left px-4 py-3">Publications</button>
-            <button onclick="showPage('collaborators')" class="mobile-nav-link block w-full text-left px-4 py-3">Collaborateurs</button>
-            <button onclick="showPage('teaching')" class="mobile-nav-link block w-full text-left px-4 py-3">Enseignement</button>
-            <button onclick="showPage('outreach')" class="mobile-nav-link block w-full text-left px-4 py-3">Outreach</button>
-            
-            <!-- User Menu Mobile -->
-            <div class="border-t p-4">
-                <div id="user-not-logged-mobile" class="space-y-2">
-                    <button onclick="showLoginModal()" class="w-full px-4 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition">
-                        Connexion
-                    </button>
-                    <button onclick="showRegisterModal()" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        Inscription
-                    </button>
-                </div>
-                
-                <div id="user-logged-mobile" class="hidden space-y-2">
-                    <p id="user-name-display-mobile" class="text-gray-700 font-semibold mb-2"></p>
-                    <button onclick="handleLogout()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        Déconnexion
-                    </button>
+        <!-- Publications -->
+        <section id="publications" class="section section-alt">
+            <div class="container split">
+                <header class="section-head">
+                    <p class="section-index">02</p>
+                    <h2>Publications</h2>
+                    <a class="text-link" href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" target="_blank" rel="noopener">Liste complète sur Scholar ↗</a>
+                </header>
+                <div>
+                    <ol id="publications-list" class="pub-list" aria-busy="true">
+                        <li class="skeleton"></li><li class="skeleton"></li>
+                    </ol>
                 </div>
             </div>
-        </div>
-    </nav>
+        </section>
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-900">Connexion</h2>
-                <button onclick="closeLoginModal()" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <!-- Google sign-in removed -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2 font-semibold">Email</label>
-                    <input type="email" id="login-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 mb-2 font-semibold">Mot de passe</label>
-                    <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">
-                    Se connecter
-                </button>
-                <p class="mt-4 text-center text-gray-600 text-sm">
-                    Pas encore de compte ? 
-                    <button type="button" onclick="switchToRegister()" class="text-green-600 hover:underline">
-                        S'inscrire
-                    </button>
-                </p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Register Modal -->
-    <div id="register-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-900">Inscription</h2>
-                <button onclick="closeRegisterModal()" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <form id="register-form" onsubmit="handleRegister(event)">
-                <!-- Google sign-up removed -->
-                <div class="grid grid-cols-2 gap-4 mb-4">
+        <!-- Collaborations -->
+        <section id="collaborations" class="section">
+            <div class="container">
+                <header class="section-head section-head-row">
                     <div>
-                        <label class="block text-gray-700 mb-2 font-semibold">Prénom</label>
-                        <input type="text" id="register-firstname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                        <p class="section-index">03</p>
+                        <h2>Collaborations</h2>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 mb-2 font-semibold">Nom</label>
-                        <input type="text" id="register-lastname" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                    </div>
+                    <p class="section-intro">Un réseau de recherche entre l'Europe, le Maghreb et les Amériques.</p>
+                </header>
+                <div class="globe-panel">
+                    <div id="globe" class="globe" role="img" aria-label="Globe des collaborations internationales"></div>
+                    <ul id="country-legend" class="country-legend"></ul>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2 font-semibold">Email</label>
-                    <input type="email" id="register-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+                <div id="collaborators-list" class="collab-groups" aria-busy="true">
+                    <div class="skeleton skeleton-card"></div>
                 </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 mb-2 font-semibold">Mot de passe</label>
-                    <input type="password" id="register-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" required minlength="6">
-                    <p class="text-xs text-gray-500 mt-1">Minimum 6 caractères</p>
-                </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold">
-                    Créer mon compte
-                </button>
-                <p class="mt-4 text-center text-gray-600 text-sm">
-                    Déjà un compte ? 
-                    <button type="button" onclick="switchToLogin()" class="text-green-600 hover:underline">
-                        Se connecter
-                    </button>
-                </p>
-            </form>
-        </div>
-    </div>
+            </div>
+        </section>
 
-    <!-- Main Content -->
-    <main id="main-content">
-        
-        <!-- Home Page -->
-        <div id="home-page" class="page-content active">
-            <!-- Hero Section -->
-            <div class="relative h-96 bg-gradient-to-br from-green-600 via-teal-500 to-blue-500 overflow-hidden">
-                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center text-white z-10 px-4">
-                        <h1 class="text-5xl md:text-6xl font-bold mb-4">Dr. Wafa MALIK</h1>
-                        <p class="text-xl md:text-2xl mb-2">Ingénieure Agronome - Chercheuse</p>
-                        <p class="text-lg opacity-90">CIRAD, Montpellier, France</p>
-                    </div>
+        <!-- Enseignement -->
+        <section id="enseignement" class="section section-alt">
+            <div class="container split">
+                <header class="section-head">
+                    <p class="section-index">04</p>
+                    <h2>Enseignement &amp; formation</h2>
+                </header>
+                <div id="teaching-list" class="teach-list" aria-busy="true">
+                    <div class="skeleton skeleton-card"></div>
                 </div>
-                <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"></div>
             </div>
+        </section>
 
-            <!-- Content -->
-            <div class="max-w-5xl mx-auto px-4 py-12">
-                <div class="bg-white rounded-2xl shadow-xl p-8 -mt-24 relative z-10">
-                    <div class="home-profile-section">
-                        <div class="home-profile-left">
-                            <div class="home-profile-image-container">
-                                <img src="assets/profile.png" alt="Photo de Dr. Wafa MALIK" class="home-profile-image">
-                            </div>
-                            <!-- replaced name with social icons stack -->
-                            <div class="home-social-icons">
-                                <a href="https://www.linkedin.com/in/wafa-malik-research/" class="home-social-icon" title="LinkedIn">
-                                    <img src="assets/linkedin.png"  alt="LinkedIn">
-                                </a>
-                                <a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&hl=fr&oi=ao" class="home-social-icon" title="ORCID">
-                                    <img src="assets/google.png"  alt="ORCID">
-                                </a>
-                                <a href="https://www.researchgate.net/profile/Malik-Wafa" class="home-social-icon" title="Twitter">
-                                    <img src="assets/ResearchGate.png"  alt="Twitter">
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="home-profile-right">
-                            <p class="text-gray-700 leading-relaxed mb-6 text-lg">
-                                Ma recherche se concentre sur les impacts des activités agricoles et du changement climatique sur la qualité de l'eau et les processus biogéochimiques de l'azote aux échelles de terrain et de bassin versant. J'utilise des modèles agro-hydrologiques de culture et distribués pour évaluer comment l'utilisation des terres et les pratiques agricoles affectent la dynamique de l'azote dans les paysages ruraux sous les scénarios climatiques et agricoles actuels et futurs.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Expertise section moved to full width under profile -->
-                    <h2 class="text-3xl font-bold text-green-800 mb-6 mt-6">Mon expertise scientifique</h2>
-                    <div class="grid gap-4">
-                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p class="text-gray-800">Impacts et adaptations au changement climatique</p>
-                        </div>
-                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p class="text-gray-800">Qualité de l'eau et évaluation environnementale intégrée</p>
-                        </div>
-                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p class="text-gray-800">Modélisation des cultures et modélisation hydrologique (SWAT, TNT2, TOPMODEL+STICS, DSSAT, MAELIA)</p>
-                        </div>
-                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p class="text-gray-800">Évaluation du cycle de vie territorial</p>
-                        </div>
-                        <div class="flex items-start bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-lg border-l-4 border-green-500 transform hover:scale-105 transition-all">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                            <p class="text-gray-800">Systèmes d'aide à la décision pour les décideurs politiques</p>
-                        </div>
-                    </div>
+        <!-- Médiation -->
+        <section id="mediation" class="section">
+            <div class="container split">
+                <header class="section-head">
+                    <p class="section-index">05</p>
+                    <h2>Médiation scientifique</h2>
+                </header>
+                <div id="outreach-list" class="outreach-list" aria-busy="true">
+                    <div class="skeleton skeleton-card"></div>
                 </div>
             </div>
-        </div>
-
-        <!-- Publications Page -->
-        <div id="publications-page" class="page-content">
-            <div class="bg-gradient-to-r from-blue-600 to-teal-600 text-white py-16">
-                <div class="max-w-6xl mx-auto px-4">
-                    <h1 class="text-5xl font-bold mb-4">Publications</h1>
-                    <p class="text-xl opacity-90">Recherches et contributions scientifiques</p>
-                </div>
-            </div>
-            <div class="max-w-6xl mx-auto px-4 py-12">
-                <div id="publications-list" class="grid gap-8">
-                    <p class="text-center text-gray-500">Chargement des publications...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Collaborators Page -->
-        <div id="collaborators-page" class="page-content">
-            <div class="bg-gradient-to-r from-teal-600 to-green-600 text-white py-16">
-                <div class="max-w-6xl mx-auto px-4">
-                    <h1 class="text-5xl font-bold mb-4">Collaborateurs</h1>
-                    <p class="text-xl opacity-90">Réseau international de recherche</p>
-                </div>
-            </div>
-            <!-- Globe showing universities/locations (predefined in JS) -->
-            <div class="max-w-6xl mx-auto px-4 py-6">
-                <div id="globe-wrapper">
-                    <div id="globe-container" class="rounded-lg overflow-hidden shadow-lg mb-6"></div>
-                    <div id="globe-popup" class="globe-popup hidden" aria-hidden="true">
-                        <div class="popup-body">
-                            <img id="globe-popup-img" src="" alt="">
-                            <div class="popup-text">
-                                <div class="name" id="globe-popup-name"></div>
-                                <div class="location" id="globe-popup-location"></div>
-                            </div>
-                        </div>
-                        <div class="popup-desc" id="globe-popup-desc"></div>
-                        <button class="popup-close" id="globe-popup-close">✕</button>
-                    </div>
-                </div>
-            </div>
-            <div class="max-w-6xl mx-auto px-4 py-12">
-                <div id="collaborators-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <p class="text-center text-gray-500">Chargement des collaborateurs...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teaching Page -->
-        <div id="teaching-page" class="page-content">
-            <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white py-16">
-                <div class="max-w-6xl mx-auto px-4">
-                    <h1 class="text-5xl font-bold mb-4">Enseignement</h1>
-                    <p class="text-xl opacity-90">Formation et transmission des connaissances</p>
-                </div>
-            </div>
-            <div class="max-w-6xl mx-auto px-4 py-12">
-                <div id="teaching-list" class="grid md:grid-cols-2 gap-8">
-                    <p class="text-center text-gray-500">Chargement des enseignements...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Outreach Page -->
-        <div id="outreach-page" class="page-content">
-            <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
-                <div class="max-w-6xl mx-auto px-4">
-                    <h1 class="text-5xl font-bold mb-4">Outreach</h1>
-                    <p class="text-xl opacity-90">Communication et vulgarisation scientifique</p>
-                </div>
-            </div>
-
-            <!-- Comments page removed: starting fresh later if needed -->
-            <div class="max-w-6xl mx-auto px-4 py-12">
-                <div id="outreach-list" class="space-y-8">
-                    <p class="text-center text-gray-500">Chargement des contenus...</p>
-                </div>
-            </div>
-        </div>
-
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8 mt-16">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <p class="mb-2">© 2024 Dr. Wafa MALIK - Tous droits réservés</p>
-            <p class="text-gray-400 text-sm">CIRAD, Montpellier, France</p>
+    <!-- Contact -->
+    <footer id="contact" class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <h2>Échangeons.</h2>
+                <p>Collaboration, projet de recherche, intervention ou encadrement : le plus simple est de me contacter via LinkedIn.</p>
+            </div>
+            <ul class="footer-links">
+                <li><a href="https://www.linkedin.com/in/wafa-malik-research/" target="_blank" rel="noopener"><img src="assets/linkedin.png" alt="" width="20" height="20">LinkedIn</a></li>
+                <li><a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" target="_blank" rel="noopener"><img src="assets/google.png" alt="" width="20" height="20">Google Scholar</a></li>
+                <li><a href="https://www.researchgate.net/profile/Malik-Wafa" target="_blank" rel="noopener"><img src="assets/ResearchGate.png" alt="" width="20" height="20">ResearchGate</a></li>
+            </ul>
+        </div>
+        <div class="container footer-bottom">
+            <p>© <span id="year"></span> Wafa Malik · CIRAD, Montpellier</p>
+            <a href="admin.html" class="admin-link">Administration</a>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <!-- Globe.gl (UMD) - includes a compatible Three.js build internally; load Globe.gl first to avoid multiple Three instances -->
-    <script src="https://unpkg.com/globe.gl@2.22.0/dist/globe.gl.min.js"></script>
-    <script src="js/globe.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
+    <script src="js/globe.js"></script>
     <script src="js/main.js"></script>
-    
-    <!-- OAuth provider setup modal removed -->
-    
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
 </body>
 </html>
