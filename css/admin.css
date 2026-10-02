@@ -1,0 +1,194 @@
+/* ==========================================================
+   Administration — complète style.css
+   ========================================================== */
+
+body.admin { background: var(--sand); min-height: 100vh; }
+[hidden] { display: none !important; }
+
+.btn-dark { background: var(--forest); color: #fff; justify-content: center; }
+.btn-dark:hover { background: var(--forest-2); }
+.btn-dark:disabled { opacity: .6; cursor: wait; transform: none; }
+
+.btn-small {
+    padding: 8px 14px;
+    font-size: 13.5px;
+    font-weight: 500;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    transition: border-color .2s, background .2s;
+}
+.btn-small:hover { border-color: var(--ink-soft); }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { border-color: var(--danger); background: #fdf1ee; }
+
+.icon-btn {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+}
+.icon-btn:hover:not(:disabled) { background: var(--paper); border-color: var(--ink-soft); }
+.icon-btn:disabled { opacity: .3; cursor: default; }
+
+/* ---------- Connexion ---------- */
+
+.login {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+        radial-gradient(800px 400px at 80% 0%, rgba(159, 211, 184, .25), transparent 60%),
+        var(--forest);
+}
+.login-card {
+    width: min(400px, 100%);
+    display: grid;
+    gap: 18px;
+    padding: 40px 32px;
+    background: var(--paper);
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .5);
+}
+.login-card h1 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin-top: 12px; }
+.back-link { justify-self: center; font-size: 14px; color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--ink); }
+
+label { display: grid; gap: 6px; }
+label > span { font-size: 13.5px; font-weight: 500; color: var(--ink-soft); }
+label em { color: var(--danger); font-style: normal; }
+label small { font-size: 12.5px; color: var(--muted); }
+input,
+textarea {
+    width: 100%;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color .2s, box-shadow .2s;
+}
+input:focus,
+textarea:focus { outline: none; border-color: var(--moss); box-shadow: 0 0 0 3px rgba(63, 125, 94, .15); }
+textarea { resize: vertical; }
+.form-error { min-height: 1em; font-size: 14px; color: var(--danger); }
+.form-error:empty { display: none; }
+
+/* ---------- Tableau de bord ---------- */
+
+.admin-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+}
+.admin-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 64px;
+    flex-wrap: wrap;
+}
+.admin-tabs { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.admin-tabs button {
+    padding: 8px 14px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    background: none;
+    border: 0;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.admin-tabs button:hover { background: rgba(22, 53, 42, .06); }
+.admin-tabs button[aria-selected="true"] { background: var(--forest); color: #fff; }
+.admin-user { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--muted); }
+
+.admin-main { padding: 40px 0 80px; }
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.admin-toolbar h1 { font-family: var(--serif); font-weight: 400; font-size: 38px; }
+
+.admin-items { display: grid; gap: 10px; }
+.admin-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.admin-item img { width: 56px; height: 56px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
+.admin-item .order { display: grid; gap: 4px; }
+.admin-item-text { flex: 1; min-width: 0; }
+.admin-item-text h3 { font-size: 16px; font-weight: 600; }
+.admin-item-text p { font-size: 13.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ---------- Éditeur ---------- */
+
+.editor {
+    width: min(620px, 100% - 32px);
+    max-height: calc(100vh - 48px);
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--radius) * 1.5);
+    background: var(--paper);
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .45);
+}
+.editor::backdrop { background: rgba(19, 34, 28, .5); backdrop-filter: blur(3px); }
+.editor form { display: flex; flex-direction: column; max-height: calc(100vh - 48px); }
+.editor header,
+.editor footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+}
+.editor header { border-bottom: 1px solid var(--line); }
+.editor footer { border-top: 1px solid var(--line); justify-content: flex-end; }
+.editor h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; }
+.editor-fields { display: grid; gap: 16px; padding: 24px; overflow-y: auto; }
+.editor .form-error { padding: 0 24px; }
+
+/* ---------- Toast ---------- */
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 100;
+    padding: 12px 20px;
+    font-size: 14.5px;
+    color: #fff;
+    background: var(--forest);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    transform: translate(-50%, 20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s var(--ease);
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast-error { background: var(--danger); }
+
+@media (max-width: 700px) {
+    .admin-user span { display: none; }
+    .admin-item { flex-wrap: wrap; }
+    .admin-item-actions { width: 100%; justify-content: flex-end; }
+}

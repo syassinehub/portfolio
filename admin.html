@@ -3,184 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Portfolio Dr. Wafa MALIK</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Custom CSS -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Administration — Wafa Malik</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co; base-uri 'self'; form-action 'self'">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
-<body class="bg-gray-100">
+<body class="admin">
 
-    <!-- Admin Dashboard -->
-    <div id="admin-dashboard">
-        <!-- Header -->
-        <div class="bg-gray-900 text-white py-3 px-4">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <span class="font-bold">Mode Admin</span>
-                    <div class="flex gap-2">
-                        <button onclick="showAdminSection('publications')" class="admin-nav-btn px-3 py-1 rounded transition">Publications</button>
-                        <button onclick="showAdminSection('collaborators')" class="admin-nav-btn px-3 py-1 rounded transition">Collaborateurs</button>
-                        <button onclick="showAdminSection('teaching')" class="admin-nav-btn px-3 py-1 rounded transition">Enseignement</button>
-                        <button onclick="showAdminSection('outreach')" class="admin-nav-btn px-3 py-1 rounded transition">Outreach</button>
-                    </div>
-                </div>
-                <button id="logout-btn" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                    Déconnexion
-                </button>
-            </div>
-        </div>
+    <!-- Connexion -->
+    <main id="login-view" class="login" hidden>
+        <form id="login-form" class="login-card">
+            <a href="index.html" class="brand"><span class="brand-mark" aria-hidden="true">WM</span><span class="brand-name">Wafa Malik</span></a>
+            <h1>Administration</h1>
+            <label>
+                <span>Email</span>
+                <input type="email" name="email" autocomplete="username" required>
+            </label>
+            <label>
+                <span>Mot de passe</span>
+                <input type="password" name="password" autocomplete="current-password" required>
+            </label>
+            <p id="login-error" class="form-error" role="alert"></p>
+            <button type="submit" class="btn btn-dark">Se connecter</button>
+            <a href="index.html" class="back-link">← Retour au site</a>
+        </form>
+    </main>
 
-        <!-- Content -->
-        <div class="max-w-7xl mx-auto p-6">
-            
-            <!-- Publications Section -->
-            <div id="admin-publications" class="admin-section">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">Gérer les Publications</h2>
-                    <button onclick="showAddForm('publication')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        Ajouter
-                    </button>
-                </div>
-                
-                <!-- Add Form -->
-                <div id="add-publication-form" class="hidden bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-bold mb-4">Nouvelle Publication</h3>
-                    <form onsubmit="handleAddPublication(event)">
-                        <input type="text" placeholder="Titre" id="pub-title" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Auteurs" id="pub-authors" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Journal/Revue" id="pub-journal" class="w-full p-3 border rounded-lg mb-3">
-                        <input type="text" placeholder="Année" id="pub-year" class="w-full p-3 border rounded-lg mb-3">
-                        <input type="url" placeholder="Lien URL" id="pub-link" class="w-full p-3 border rounded-lg mb-3">
-                        <input type="url" placeholder="URL de l'image" id="pub-image" class="w-full p-3 border rounded-lg mb-4">
-                        <div class="flex gap-3">
-                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Enregistrer</button>
-                            <button type="button" onclick="hideAddForm('publication')" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">Annuler</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="publications-admin-list" class="space-y-4">
-                    <p class="text-gray-500">Chargement...</p>
+    <!-- Tableau de bord -->
+    <div id="dashboard-view" hidden>
+        <header class="admin-header">
+            <div class="container admin-header-inner">
+                <a href="index.html" class="brand" title="Voir le site"><span class="brand-mark" aria-hidden="true">WM</span><span class="brand-name">Admin</span></a>
+                <nav id="admin-tabs" class="admin-tabs" role="tablist"></nav>
+                <div class="admin-user">
+                    <span id="admin-email"></span>
+                    <button id="logout-btn" class="btn-small">Déconnexion</button>
                 </div>
             </div>
+        </header>
 
-            <!-- Collaborators Section -->
-            <div id="admin-collaborators" class="admin-section hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">Gérer les Collaborateurs</h2>
-                    <button onclick="showAddForm('collaborator')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        Ajouter
-                    </button>
-                </div>
-                
-                <!-- Add Form -->
-                <div id="add-collaborator-form" class="hidden bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-bold mb-4">Nouveau Collaborateur</h3>
-                    <form onsubmit="handleAddCollaborator(event)">
-                        <input type="text" placeholder="Nom" id="collab-name" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Titre/Position" id="collab-title" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Institution" id="collab-institution" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Pays" id="collab-country" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="url" placeholder="Lien vers profil (optionnel)" id="collab-link" class="w-full p-3 border rounded-lg mb-3">
-                        <input type="url" placeholder="Lien vers photo (optionnel)" id="collab-image" class="w-full p-3 border rounded-lg mb-4">
-                        <div class="flex gap-3">
-                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Enregistrer</button>
-                            <button type="button" onclick="hideAddForm('collaborator')" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">Annuler</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="collaborators-admin-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <p class="text-gray-500">Chargement...</p>
-                </div>
+        <main class="container admin-main">
+            <div class="admin-toolbar">
+                <h1 id="section-title"></h1>
+                <button id="add-btn" class="btn btn-dark">+ Ajouter</button>
             </div>
-
-            <!-- Teaching Section -->
-            <div id="admin-teaching" class="admin-section hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">Gérer les Enseignements</h2>
-                    <button onclick="showAddForm('teaching')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        Ajouter
-                    </button>
-                </div>
-                
-                <!-- Add Form -->
-                <div id="add-teaching-form" class="hidden bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-bold mb-4">Nouvel Enseignement</h3>
-                    <form onsubmit="handleAddTeaching(event)">
-                        <input type="text" placeholder="Titre" id="teach-title" class="w-full p-3 border rounded-lg mb-3" required>
-                        <textarea placeholder="Description" id="teach-description" class="w-full p-3 border rounded-lg mb-3 h-24"></textarea>
-                        <input type="text" placeholder="Institution" id="teach-institution" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="text" placeholder="Lieu" id="teach-location" class="w-full p-3 border rounded-lg mb-3" required>
-                        <input type="url" placeholder="URL de l'image" id="teach-image" class="w-full p-3 border rounded-lg mb-4">
-                        <div class="flex gap-3">
-                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">Enregistrer</button>
-                            <button type="button" onclick="hideAddForm('teaching')" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">Annuler</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="teaching-admin-list" class="grid md:grid-cols-2 gap-4">
-                    <p class="text-gray-500">Chargement...</p>
-                </div>
-            </div>
-
-            <!-- Outreach Section -->
-            <div id="admin-outreach" class="admin-section hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold text-gray-900">Gérer l'Outreach</h2>
-                    <button onclick="showAddForm('outreach')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition flex items-center gap-2">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        Ajouter
-                    </button>
-                </div>
-                
-                <!-- Add Form -->
-                <div id="add-outreach-form" class="hidden bg-white p-6 rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-bold mb-4">Nouveau Contenu Outreach</h3>
-                    <form onsubmit="handleAddOutreach(event)">
-                        <input type="text" placeholder="Titre" id="out-title" class="w-full p-3 border rounded-lg mb-3" required>
-                        <textarea placeholder="Description" id="out-description" class="w-full p-3 border rounded-lg mb-3 h-24"></textarea>
-                        <input type="url" placeholder="Lien externe" id="out-link" class="w-full p-3 border rounded-lg mb-3">
-                        <input type="url" placeholder="URL embed YouTube" id="out-embed" class="w-full p-3 border rounded-lg mb-4">
-                        <div class="flex gap-3">
-                            <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">Enregistrer</button>
-                            <button type="button" onclick="hideAddForm('outreach')" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">Annuler</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="outreach-admin-list" class="space-y-4">
-                    <p class="text-gray-500">Chargement...</p>
-                </div>
-            </div>
-
-        </div>
+            <div id="items" class="admin-items" aria-live="polite"></div>
+        </main>
     </div>
 
-    <!-- Scripts -->
+    <!-- Formulaire d'ajout / édition -->
+    <dialog id="editor" class="editor">
+        <form id="editor-form" method="dialog">
+            <header>
+                <h2 id="editor-title"></h2>
+                <button type="button" class="icon-btn" data-close aria-label="Fermer">✕</button>
+            </header>
+            <div id="editor-fields" class="editor-fields"></div>
+            <p id="editor-error" class="form-error" role="alert"></p>
+            <footer>
+                <button type="button" class="btn-small" data-close>Annuler</button>
+                <button type="submit" class="btn btn-dark">Enregistrer</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
     <script src="js/supabase.js"></script>
     <script src="js/admin.js"></script>
-    
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
 </body>
 </html>

@@ -1,799 +1,307 @@
 // ============================================
-// VÉRIFICATION ADMIN
+// ADMINISTRATION
 // ============================================
+// Authentification : Supabase Auth. Les droits d'écriture sont vérifiés
+// côté serveur par RLS (public.is_admin()) — l'interface ne fait qu'en refléter l'état.
 
-let currentAdminSection = 'publications';
-let currentAdminUser = null;
+const SECTIONS = {
+    publications: {
+        label: 'Publications',
+        singular: 'une publication',
+        fields: [
+            { name: 'title', label: 'Titre', required: true },
+            { name: 'authors', label: 'Auteurs', required: true, hint: 'Ex. : Wafa Malik, Patrick Durand & François Oehler' },
+            { name: 'journal', label: 'Revue' },
+            { name: 'year', label: 'Année', type: 'number', min: 1950, max: 2100 },
+            { name: 'link', label: 'Lien (DOI ou URL)', type: 'url' },
+            { name: 'image', label: "URL de l'image", type: 'url' },
+        ],
+        summary: (p) => [p.authors, [p.journal, p.year].filter(Boolean).join(' · ')],
+    },
+    collaborators: {
+        label: 'Collaborateurs',
+        singular: 'un collaborateur',
+        sortable: true,
+        fields: [
+            { name: 'name', label: 'Nom', required: true },
+            { name: 'title', label: 'Fonction' },
+            { name: 'institution', label: 'Institution', required: true },
+            { name: 'country', label: 'Pays', required: true, hint: 'En anglais ou en français (France, Spain, USA, Tunisia…) — utilisé pour le globe' },
+            { name: 'link', label: 'Lien vers le profil', type: 'url' },
+            { name: 'image', label: 'URL de la photo', type: 'url' },
+        ],
+        summary: (c) => [[c.title, c.institution].filter(Boolean).join(' — '), c.country],
+    },
+    teaching: {
+        label: 'Enseignement',
+        singular: 'un enseignement',
+        fields: [
+            { name: 'title', label: 'Titre', required: true },
+            { name: 'description', label: 'Description', type: 'textarea' },
+            { name: 'institution', label: 'Institution', required: true },
+            { name: 'location', label: 'Lieu', required: true },
+            { name: 'image', label: "URL de l'image", type: 'url' },
+        ],
+        summary: (t) => [[t.institution, t.location].filter(Boolean).join(' · ')],
+    },
+    outreach: {
+        label: 'Médiation',
+        singular: 'un contenu',
+        fields: [
+            { name: 'title', label: 'Titre', required: true },
+            { name: 'description', label: 'Description', type: 'textarea', rows: 8, hint: 'Une ligne vide sépare les paragraphes ; seul le premier est affiché avant « Lire la suite ».' },
+            { name: 'link', label: 'Lien externe', type: 'url' },
+            { name: 'embed_url', label: 'Vidéo (YouTube ou Vimeo)', type: 'url', hint: "Coller simplement le lien de la vidéo, il est converti automatiquement." },
+        ],
+        summary: (o) => [String(o.description || '').slice(0, 140)],
+    },
+};
 
-// Vérifier si l'utilisateur est admin
-function checkAdminAccess() {
-    const user = getCurrentUser();
-    
-    if (!user || !isSessionValid()) {
-        // Pas connecté ou session expirée
-        alert('Vous devez être connecté pour accéder à cette page');
-        window.location.href = 'index.html';
-        return false;
-    }
-    
-    if (!isAdmin(user)) {
-        // Connecté mais pas admin
-        alert('Accès refusé. Vous n\'avez pas les droits d\'administrateur.');
-        window.location.href = 'index.html';
-        return false;
-    }
-    
-    // Tout est bon
-    currentAdminUser = user;
-    updateAdminHeader();
-    return true;
+const state = { section: 'publications', items: [], editing: null };
+
+const $ = (id) => document.getElementById(id);
+
+// --- Interface ----------------------------------------------------------
+
+let toastTimer;
+function toast(message, isError = false) {
+    const el = $('toast');
+    el.textContent = message;
+    el.classList.toggle('toast-error', isError);
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
 }
 
-// Mettre à jour le header admin avec le nom
-function updateAdminHeader() {
-    if (currentAdminUser) {
-        const adminInfo = document.createElement('span');
-        adminInfo.className = 'text-white text-sm';
-        adminInfo.textContent = `${currentAdminUser.firstName} ${currentAdminUser.lastName}`;
-        
-        const headerDiv = document.querySelector('.bg-gray-900 .flex');
-        if (headerDiv && !document.getElementById('admin-user-info')) {
-            adminInfo.id = 'admin-user-info';
-            headerDiv.insertBefore(adminInfo, headerDiv.querySelector('#logout-btn'));
-        }
+function showView(view) {
+    $('login-view').hidden = view !== 'login';
+    $('dashboard-view').hidden = view !== 'dashboard';
+}
+
+function renderTabs() {
+    $('admin-tabs').innerHTML = Object.entries(SECTIONS).map(([key, s]) => `
+        <button role="tab" data-section="${key}" aria-selected="${key === state.section}">${esc(s.label)}</button>
+    `).join('');
+}
+
+function renderItems() {
+    const section = SECTIONS[state.section];
+    const container = $('items');
+    $('section-title').textContent = section.label;
+
+    if (!state.items.length) {
+        container.innerHTML = `<p class="state">Aucun élément. Ajoutez ${esc(section.singular)}.</p>`;
+        return;
+    }
+
+    container.innerHTML = state.items.map((item, index) => {
+        const image = safeUrl(item.image, { image: true });
+        const lines = section.summary(item).filter(Boolean);
+        return `
+            <article class="admin-item" data-id="${esc(item.id)}">
+                ${section.sortable ? `
+                    <div class="order">
+                        <button class="icon-btn" data-action="up" aria-label="Monter" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="icon-btn" data-action="down" aria-label="Descendre" ${index === state.items.length - 1 ? 'disabled' : ''}>↓</button>
+                    </div>` : ''}
+                ${image ? `<img src="${esc(image)}" alt="" loading="lazy">` : ''}
+                <div class="admin-item-text">
+                    <h3>${esc(item.name || item.title)}</h3>
+                    ${lines.map((l) => `<p>${esc(l)}</p>`).join('')}
+                </div>
+                <div class="admin-item-actions">
+                    <button class="btn-small" data-action="edit">Modifier</button>
+                    <button class="btn-small btn-danger" data-action="delete">Supprimer</button>
+                </div>
+            </article>`;
+    }).join('');
+}
+
+async function loadSection(section) {
+    state.section = section;
+    renderTabs();
+    $('items').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
+    try {
+        state.items = await Content.list(section);
+        renderItems();
+    } catch (err) {
+        console.error(err);
+        $('items').innerHTML = `<p class="state state-error">Erreur de chargement : ${esc(err.message)}</p>`;
     }
 }
 
-// Déconnexion
-function logout() {
-    logoutUser();
-    alert('Vous êtes déconnecté');
-    window.location.href = 'index.html';
+// --- Éditeur ------------------------------------------------------------
+
+function fieldHtml(field, value) {
+    const id = `field-${field.name}`;
+    const common = `id="${id}" name="${field.name}" ${field.required ? 'required' : ''}`;
+    const input = field.type === 'textarea'
+        ? `<textarea ${common} rows="${field.rows || 4}">${esc(value)}</textarea>`
+        : `<input ${common} type="${field.type || 'text'}" value="${esc(value)}"${field.min ? ` min="${field.min}" max="${field.max}"` : ''}>`;
+    return `
+        <label for="${id}">
+            <span>${esc(field.label)}${field.required ? ' <em>*</em>' : ''}</span>
+            ${input}
+            ${field.hint ? `<small>${esc(field.hint)}</small>` : ''}
+        </label>`;
 }
 
-document.getElementById('logout-btn')?.addEventListener('click', function() {
-    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-        logout();
-    }
-});
+function openEditor(item = null) {
+    const section = SECTIONS[state.section];
+    state.editing = item;
+    $('editor-title').textContent = item ? 'Modifier' : `Ajouter ${section.singular}`;
+    $('editor-fields').innerHTML = section.fields.map((f) => fieldHtml(f, item?.[f.name])).join('');
+    $('editor-error').textContent = '';
+    $('editor').showModal();
+    $('editor-fields').querySelector('input, textarea')?.focus();
+}
 
-// ============================================
-// NAVIGATION ADMIN
-// ============================================
-
-function showAdminSection(section) {
-    // Cacher toutes les sections
-    document.querySelectorAll('.admin-section').forEach(sec => {
-        sec.classList.remove('active');
+function readEditor() {
+    const form = new FormData($('editor-form'));
+    const row = {};
+    SECTIONS[state.section].fields.forEach((f) => {
+        const value = String(form.get(f.name) ?? '').trim();
+        row[f.name] = value;
     });
-    
-    // Afficher la section sélectionnée
-    const selectedSection = document.getElementById(`admin-${section}`);
-    if (selectedSection) {
-        selectedSection.classList.add('active');
-        currentAdminSection = section;
-        
-        // Mettre à jour les boutons de navigation
-        document.querySelectorAll('.admin-nav-btn').forEach((btn, index) => {
-            const sections = ['publications', 'collaborators', 'teaching', 'outreach'];
-            if (sections[index] === section) {
-                btn.classList.add('active', 'bg-green-600');
-                btn.classList.remove('hover:bg-gray-700');
-            } else {
-                btn.classList.remove('active', 'bg-green-600');
-                btn.classList.add('hover:bg-gray-700');
-            }
-        });
+    if ('embed_url' in row && row.embed_url) {
+        const embed = toEmbedUrl(row.embed_url);
+        if (!embed) throw new Error('Lien vidéo non reconnu (YouTube ou Vimeo uniquement).');
+        row.embed_url = embed;
     }
+    return row;
 }
 
-// ============================================
-// CHARGER LES DONNÉES ADMIN
-// ============================================
-
-async function loadAllAdminData() {
-    await loadAdminPublications();
-    await loadAdminCollaborators();
-    await loadAdminTeaching();
-    await loadAdminOutreach();
-}
-
-// ============================================
-// PUBLICATIONS ADMIN
-// ============================================
-
-async function loadAdminPublications() {
-    const container = document.getElementById('publications-admin-list');
-    container.innerHTML = '<p class="text-gray-500">Chargement...</p>';
-    
-    try {
-        const publications = await getPublications();
-        
-        if (publications.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">Aucune publication. Ajoutez-en une !</p>';
-            return;
-        }
-        
-        container.innerHTML = publications.map(pub => {
-            // Mode édition
-            if (editingItem && editingItem.id === pub.id) {
-                return `
-                    <div class="admin-card bg-blue-50">
-                        <h4 class="text-lg font-bold mb-3">Modifier la publication</h4>
-                        <input type="text" value="${pub.title}" id="edit-pub-title-${pub.id}" class="w-full p-2 border rounded mb-2" placeholder="Titre">
-                        <input type="text" value="${pub.authors}" id="edit-pub-authors-${pub.id}" class="w-full p-2 border rounded mb-2" placeholder="Auteurs">
-                        <input type="text" value="${pub.journal || ''}" id="edit-pub-journal-${pub.id}" class="w-full p-2 border rounded mb-2" placeholder="Journal">
-                        <input type="text" value="${pub.year || ''}" id="edit-pub-year-${pub.id}" class="w-full p-2 border rounded mb-2" placeholder="Année">
-                        <input type="url" value="${pub.link || ''}" id="edit-pub-link-${pub.id}" class="w-full p-2 border rounded mb-2" placeholder="Lien">
-                        <input type="url" value="${pub.image || ''}" id="edit-pub-image-${pub.id}" class="w-full p-2 border rounded mb-3" placeholder="URL image">
-                        <div class="flex gap-2">
-                            <button onclick="savePublicationEdit(${pub.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
-                                <i data-lucide="save" class="w-4 h-4"></i>
-                                Enregistrer
-                            </button>
-                            <button onclick="cancelEdit()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Mode affichage normal
-            return `
-                <div class="admin-card">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">${pub.title}</h3>
-                    <p class="text-gray-600 text-sm mb-2">${pub.authors}</p>
-                    <p class="text-green-600 text-sm mb-3">${pub.journal || ''} ${pub.year || ''}</p>
-                    <div class="flex gap-2">
-                        <button onclick='editPublication(${JSON.stringify(pub).replace(/'/g, "&apos;")})' class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="edit-2" class="w-3 h-3"></i>
-                            Modifier
-                        </button>
-                        <button onclick="deleteItem('publication', ${pub.id})" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                            Supprimer
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        lucide.createIcons();
-    } catch (error) {
-        container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
-    }
-}
-
-// Éditer une publication
-function editPublication(pub) {
-    editingItem = pub;
-    editingType = 'publication';
-    loadAdminPublications();
-}
-
-// Sauvegarder l'édition
-async function savePublicationEdit(id) {
-    const data = {
-        title: document.getElementById(`edit-pub-title-${id}`).value,
-        authors: document.getElementById(`edit-pub-authors-${id}`).value,
-        journal: document.getElementById(`edit-pub-journal-${id}`).value,
-        year: document.getElementById(`edit-pub-year-${id}`).value,
-        link: document.getElementById(`edit-pub-link-${id}`).value,
-        image: document.getElementById(`edit-pub-image-${id}`).value
-    };
-    
-    await updatePublicationData(id, data);
-}
-
-function showAddForm(type) {
-    document.getElementById(`add-${type}-form`).classList.remove('hidden');
-}
-
-function hideAddForm(type) {
-    document.getElementById(`add-${type}-form`).classList.add('hidden');
-}
-
-async function handleAddPublication(e) {
+async function saveEditor(e) {
     e.preventDefault();
-    
-    const publication = {
-        title: document.getElementById('pub-title').value,
-        authors: document.getElementById('pub-authors').value,
-        journal: document.getElementById('pub-journal').value,
-        year: document.getElementById('pub-year').value,
-        link: document.getElementById('pub-link').value,
-        image: document.getElementById('pub-image').value
-    };
-    
+    const submit = e.submitter || $('editor-form').querySelector('[type="submit"]');
+    submit.disabled = true;
     try {
-        await addPublication(publication);
-        alert('Publication ajoutée avec succès !');
-        hideAddForm('publication');
-        e.target.reset();
-        await loadAdminPublications();
-    } catch (error) {
-        alert('Erreur lors de l\'ajout');
-    }
-}
-
-// ============================================
-// COLLABORATORS ADMIN
-// ============================================
-
-async function loadAdminCollaborators() {
-    const container = document.getElementById('collaborators-admin-list');
-    container.innerHTML = '<p class="text-gray-500">Chargement...</p>';
-    
-    try {
-        let collaborators = await getCollaborators();
-
-        // Client-side sort: prefer explicit `position` if present, otherwise keep server order
-        collaborators = collaborators.sort((a, b) => {
-            const pa = (typeof a.position !== 'undefined' && a.position !== null) ? a.position : Number.MAX_SAFE_INTEGER;
-            const pb = (typeof b.position !== 'undefined' && b.position !== null) ? b.position : Number.MAX_SAFE_INTEGER;
-            if (pa !== pb) return pa - pb;
-            // fallback to created_at desc for consistent display
-            if (a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
-            return 0;
-        });
-        
-        if (collaborators.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">Aucun collaborateur. Ajoutez-en un !</p>';
-            return;
+        const row = readEditor();
+        if (state.editing) {
+            await Content.update(state.section, state.editing.id, row);
+            toast('Modifications enregistrées');
+        } else {
+            if (SECTIONS[state.section].sortable) {
+                row.position = state.items.reduce((max, i) => Math.max(max, i.position || 0), 0) + 1;
+            }
+            await Content.insert(state.section, row);
+            toast('Élément ajouté');
         }
-        
-        container.innerHTML = collaborators.map(collab => {
-            // Mode édition
-            if (editingItem && editingItem.id === collab.id) {
-                return `
-                    <div class="admin-card col-span-full bg-blue-50">
-                        <h4 class="text-lg font-bold mb-3">Modifier le collaborateur</h4>
-                        <input type="text" value="${collab.name}" id="edit-collab-name-${collab.id}" class="w-full p-2 border rounded mb-2" placeholder="Nom">
-                        <input type="text" value="${collab.title}" id="edit-collab-title-${collab.id}" class="w-full p-2 border rounded mb-2" placeholder="Titre">
-                        <input type="text" value="${collab.institution}" id="edit-collab-institution-${collab.id}" class="w-full p-2 border rounded mb-2" placeholder="Institution">
-                        <input type="text" value="${collab.country}" id="edit-collab-country-${collab.id}" class="w-full p-2 border rounded mb-2" placeholder="Pays">
-                        <input type="url" value="${collab.link || ''}" id="edit-collab-link-${collab.id}" class="w-full p-2 border rounded mb-2" placeholder="Lien">
-                        <input type="url" value="${collab.image || ''}" id="edit-collab-image-${collab.id}" class="w-full p-2 border rounded mb-3" placeholder="URL image">
-                        <div class="flex gap-2">
-                            <button onclick="saveCollaboratorEdit(${collab.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
-                                <i data-lucide="save" class="w-4 h-4"></i>
-                                Enregistrer
-                            </button>
-                            <button onclick="cancelEdit()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Mode affichage normal
-            return `
-                <div class="admin-card">
-                    ${collab.image ? `
-                        <div class="mb-3 -mx-6 -mt-6">
-                            <img src="${collab.image}" alt="${collab.name}" class="w-full h-32 object-cover rounded-t-xl">
-                        </div>
-                    ` : ''}
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">${collab.name}</h3>
-                    <p class="text-gray-600 text-sm mb-1">${collab.title}</p>
-                    <p class="text-teal-600 text-sm mb-1">${collab.institution}</p>
-                    <p class="text-gray-500 text-sm mb-3">${collab.country}</p>
-                    <div class="flex gap-2 items-center">
-                        <button title="Monter en haut" onclick="moveCollaboratorToTop(${collab.id})" class="bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 flex items-center gap-1 text-sm">
-                            <i data-lucide="chevrons-up" class="w-4 h-4"></i>
-                        </button>
-                        <button title="Descendre en bas" onclick="moveCollaboratorToBottom(${collab.id})" class="bg-gray-200 text-gray-700 px-2 py-1 rounded hover:bg-gray-300 flex items-center gap-1 text-sm">
-                            <i data-lucide="chevrons-down" class="w-4 h-4"></i>
-                        </button>
-
-                        <button onclick='editCollaborator(${JSON.stringify(collab).replace(/'/g, "&apos;")})' class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="edit-2" class="w-3 h-3"></i>
-                            Modifier
-                        </button>
-                        <button onclick="deleteItem('collaborator', ${collab.id})" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                            Supprimer
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        lucide.createIcons();
-    } catch (error) {
-        container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
+        $('editor').close();
+        await loadSection(state.section);
+    } catch (err) {
+        console.error(err);
+        $('editor-error').textContent = err.message || "Échec de l'enregistrement";
+    } finally {
+        submit.disabled = false;
     }
 }
 
-// Éditer un collaborateur
-function editCollaborator(collab) {
-    editingItem = collab;
-    editingType = 'collaborator';
-    loadAdminCollaborators();
-}
+// --- Actions ------------------------------------------------------------
 
-// Sauvegarder l'édition
-async function saveCollaboratorEdit(id) {
-    const data = {
-        name: document.getElementById(`edit-collab-name-${id}`).value,
-        title: document.getElementById(`edit-collab-title-${id}`).value,
-        institution: document.getElementById(`edit-collab-institution-${id}`).value,
-        country: document.getElementById(`edit-collab-country-${id}`).value,
-        link: document.getElementById(`edit-collab-link-${id}`).value,
-        image: document.getElementById(`edit-collab-image-${id}`).value
-    };
-    
-    await updateCollaboratorData(id, data);
-}
-
-async function handleAddCollaborator(e) {
-    e.preventDefault();
-    
-    const collaborator = {
-        name: document.getElementById('collab-name').value,
-        title: document.getElementById('collab-title').value,
-        institution: document.getElementById('collab-institution').value,
-        country: document.getElementById('collab-country').value,
-        link: document.getElementById('collab-link').value,
-        image: document.getElementById('collab-image').value
-    };
-    
+async function moveItem(id, delta) {
+    const items = [...state.items];
+    const from = items.findIndex((i) => String(i.id) === String(id));
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= items.length) return;
+    [items[from], items[to]] = [items[to], items[from]];
     try {
-        // Determine next position (append to bottom). If `position` column not present on DB,
-        // addCollaborator will fail and we catch the error below and show guidance.
-        try {
-            const existing = await getCollaborators();
-            // find max defined position
-            const maxPos = existing.reduce((acc, c) => {
-                const p = (typeof c.position !== 'undefined' && c.position !== null) ? Number(c.position) : acc;
-                return Math.max(acc, isNaN(p) ? acc : p);
-            }, 0);
-            collaborator.position = maxPos + 1;
-        } catch (e) {
-            // if reading collaborators fails, proceed without position — DB may not have the column
-        }
-
-        await addCollaborator(collaborator);
-        alert('Collaborateur ajouté avec succès !');
-        hideAddForm('collaborator');
-        e.target.reset();
-        await loadAdminCollaborators();
-    } catch (error) {
-        console.error('Erreur ajout collaborateur:', error);
-        alert('Erreur lors de l\'ajout. Si l\'erreur concerne le champ `position`, ajoutez une colonne entière `position` dans la table `collaborators` dans Supabase (integer).');
+        // Réécrit les positions 1..N uniquement là où elles changent
+        await Promise.all(items.map((item, i) =>
+            item.position === i + 1 ? null : Content.update(state.section, item.id, { position: i + 1 })));
+        await loadSection(state.section);
+    } catch (err) {
+        toast(err.message, true);
+        await loadSection(state.section);
     }
 }
 
-// Déplacer un collaborateur en première position
-async function moveCollaboratorToTop(id) {
+async function deleteItem(id) {
+    const item = state.items.find((i) => String(i.id) === String(id));
+    if (!confirm(`Supprimer « ${item?.name || item?.title} » ? Cette action est définitive.`)) return;
     try {
-        const collabs = await getCollaborators();
-        if (!collabs || collabs.length === 0) return;
-
-        // compute current min position (use large number when undefined)
-        let minPos = Number.MAX_SAFE_INTEGER;
-        collabs.forEach(c => {
-            if (typeof c.position !== 'undefined' && c.position !== null) {
-                const p = Number(c.position);
-                if (!isNaN(p)) minPos = Math.min(minPos, p);
-            }
-        });
-
-        const newPos = (minPos === Number.MAX_SAFE_INTEGER) ? 1 : (minPos - 1);
-
-        await updateCollaborator(id, { position: newPos });
-        await normalizeCollaboratorPositions();
-        await loadAdminCollaborators();
-    } catch (error) {
-        console.error('moveCollaboratorToTop error', error);
-        alert('Impossible de modifier l\'ordre. Vérifiez que la colonne `position` existe dans la table `collaborators` et que votre clé a les droits d\'écriture.');
+        await Content.remove(state.section, id);
+        toast('Élément supprimé');
+        await loadSection(state.section);
+    } catch (err) {
+        toast(err.message, true);
     }
 }
 
-// Déplacer un collaborateur en dernière position
-async function moveCollaboratorToBottom(id) {
-    try {
-        const collabs = await getCollaborators();
-        if (!collabs || collabs.length === 0) return;
+// --- Authentification ---------------------------------------------------
 
-        // compute current max position
-        let maxPos = 0;
-        collabs.forEach(c => {
-            if (typeof c.position !== 'undefined' && c.position !== null) {
-                const p = Number(c.position);
-                if (!isNaN(p)) maxPos = Math.max(maxPos, p);
-            }
-        });
-
-        const newPos = (maxPos === 0) ? collabs.length + 1 : (maxPos + 1);
-
-        await updateCollaborator(id, { position: newPos });
-        await normalizeCollaboratorPositions();
-        await loadAdminCollaborators();
-    } catch (error) {
-        console.error('moveCollaboratorToBottom error', error);
-        alert('Impossible de modifier l\'ordre. Vérifiez que la colonne `position` existe dans la table `collaborators` et que votre clé a les droits d\'écriture.');
-    }
-}
-
-// Normaliser les positions en séquence 1..N pour éviter des positions négatives/éparses
-async function normalizeCollaboratorPositions() {
-    try {
-        let collabs = await getCollaborators();
-        // sort by position if present else created_at desc
-        collabs = collabs.sort((a, b) => {
-            const pa = (typeof a.position !== 'undefined' && a.position !== null) ? a.position : Number.MAX_SAFE_INTEGER;
-            const pb = (typeof b.position !== 'undefined' && b.position !== null) ? b.position : Number.MAX_SAFE_INTEGER;
-            if (pa !== pb) return pa - pb;
-            if (a.created_at && b.created_at) return new Date(b.created_at) - new Date(a.created_at);
-            return 0;
-        });
-
-        // assign sequential positions starting from 1
-        for (let i = 0; i < collabs.length; i++) {
-            const desired = i + 1;
-            const c = collabs[i];
-            const current = (typeof c.position !== 'undefined' && c.position !== null) ? Number(c.position) : null;
-            if (current !== desired) {
-                try {
-                    await updateCollaborator(c.id, { position: desired });
-                } catch (e) {
-                    // if update fails, warn and stop attempting further updates
-                    console.error('normalize update failed for id', c.id, e);
-                    throw e;
-                }
-            }
-        }
-    } catch (error) {
-        console.error('normalizeCollaboratorPositions error', error);
-        // don't show repeated alerts; caller handles guidance
-    }
-}
-
-// ============================================
-// GESTION DES IMAGES COLLABORATEURS
-// ============================================
-
-// (Code supprimé - retour à la version simple sans upload d'images)
-
-// ============================================
-// TEACHING ADMIN
-// ============================================
-
-async function loadAdminTeaching() {
-    const container = document.getElementById('teaching-admin-list');
-    container.innerHTML = '<p class="text-gray-500">Chargement...</p>';
-    
-    try {
-        const teaching = await getTeaching();
-        
-        if (teaching.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">Aucun enseignement. Ajoutez-en un !</p>';
-            return;
-        }
-        
-        container.innerHTML = teaching.map(teach => {
-            // Mode édition
-            if (editingItem && editingItem.id === teach.id) {
-                return `
-                    <div class="admin-card col-span-full bg-blue-50">
-                        <h4 class="text-lg font-bold mb-3">Modifier l'enseignement</h4>
-                        <input type="text" value="${teach.title}" id="edit-teach-title-${teach.id}" class="w-full p-2 border rounded mb-2" placeholder="Titre">
-                        <textarea id="edit-teach-description-${teach.id}" class="w-full p-2 border rounded mb-2 h-20" placeholder="Description">${teach.description || ''}</textarea>
-                        <input type="text" value="${teach.institution}" id="edit-teach-institution-${teach.id}" class="w-full p-2 border rounded mb-2" placeholder="Institution">
-                        <input type="text" value="${teach.location}" id="edit-teach-location-${teach.id}" class="w-full p-2 border rounded mb-2" placeholder="Lieu">
-                        <input type="url" value="${teach.image || ''}" id="edit-teach-image-${teach.id}" class="w-full p-2 border rounded mb-3" placeholder="URL image">
-                        <div class="flex gap-2">
-                            <button onclick="saveTeachingEdit(${teach.id})" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2">
-                                <i data-lucide="save" class="w-4 h-4"></i>
-                                Enregistrer
-                            </button>
-                            <button onclick="cancelEdit()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Mode affichage normal
-            return `
-                <div class="admin-card">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">${teach.title}</h3>
-                    <p class="text-gray-600 text-sm mb-2">${teach.description || ''}</p>
-                    <p class="text-green-600 text-sm mb-1">${teach.institution}</p>
-                    <p class="text-gray-500 text-sm mb-3">${teach.location}</p>
-                    <div class="flex gap-2">
-                        <button onclick='editTeaching(${JSON.stringify(teach).replace(/'/g, "&apos;")})' class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="edit-2" class="w-3 h-3"></i>
-                            Modifier
-                        </button>
-                        <button onclick="deleteItem('teaching', ${teach.id})" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                            Supprimer
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        lucide.createIcons();
-    } catch (error) {
-        container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
-    }
-}
-
-// Éditer un enseignement
-function editTeaching(teach) {
-    editingItem = teach;
-    editingType = 'teaching';
-    loadAdminTeaching();
-}
-
-// Sauvegarder l'édition
-async function saveTeachingEdit(id) {
-    const data = {
-        title: document.getElementById(`edit-teach-title-${id}`).value,
-        description: document.getElementById(`edit-teach-description-${id}`).value,
-        institution: document.getElementById(`edit-teach-institution-${id}`).value,
-        location: document.getElementById(`edit-teach-location-${id}`).value,
-        image: document.getElementById(`edit-teach-image-${id}`).value
-    };
-    
-    await updateTeachingData(id, data);
-}
-
-async function handleAddTeaching(e) {
-    e.preventDefault();
-    
-    const teaching = {
-        title: document.getElementById('teach-title').value,
-        description: document.getElementById('teach-description').value,
-        institution: document.getElementById('teach-institution').value,
-        location: document.getElementById('teach-location').value,
-        image: document.getElementById('teach-image').value
-    };
-    
-    try {
-        await addTeaching(teaching);
-        alert('Enseignement ajouté avec succès !');
-        hideAddForm('teaching');
-        e.target.reset();
-        await loadAdminTeaching();
-    } catch (error) {
-        alert('Erreur lors de l\'ajout');
-    }
-}
-
-// ============================================
-// OUTREACH ADMIN
-// ============================================
-
-async function loadAdminOutreach() {
-    const container = document.getElementById('outreach-admin-list');
-    container.innerHTML = '<p class="text-gray-500">Chargement...</p>';
-    
-    try {
-        const outreach = await getOutreach();
-        
-        if (outreach.length === 0) {
-            container.innerHTML = '<p class="text-gray-500">Aucun contenu. Ajoutez-en un !</p>';
-            return;
-        }
-        
-        container.innerHTML = outreach.map(item => {
-            // Mode édition
-            if (editingItem && editingItem.id === item.id) {
-                return `
-                    <div class="admin-card bg-blue-50">
-                        <h4 class="text-lg font-bold mb-3">Modifier le contenu</h4>
-                        <input type="text" value="${item.title}" id="edit-out-title-${item.id}" class="w-full p-2 border rounded mb-2" placeholder="Titre">
-                        <textarea id="edit-out-description-${item.id}" class="w-full p-2 border rounded mb-2 h-20" placeholder="Description">${item.description || ''}</textarea>
-                        <input type="url" value="${item.link || ''}" id="edit-out-link-${item.id}" class="w-full p-2 border rounded mb-2" placeholder="Lien">
-                        <input type="url" value="${item.embed_url || ''}" id="edit-out-embed-${item.id}" class="w-full p-2 border rounded mb-3" placeholder="URL embed YouTube">
-                        <div class="flex gap-2">
-                            <button onclick="saveOutreachEdit(${item.id})" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2">
-                                <i data-lucide="save" class="w-4 h-4"></i>
-                                Enregistrer
-                            </button>
-                            <button onclick="cancelEdit()" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">
-                                Annuler
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Mode affichage normal
-            return `
-                <div class="admin-card">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">${item.title}</h3>
-                    <p class="text-gray-600 text-sm mb-3">${item.description || ''}</p>
-                    <div class="flex gap-2">
-                        <button onclick='editOutreach(${JSON.stringify(item).replace(/'/g, "&apos;")})' class="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="edit-2" class="w-3 h-3"></i>
-                            Modifier
-                        </button>
-                        <button onclick="deleteItem('outreach', ${item.id})" class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 flex items-center gap-1 text-sm">
-                            <i data-lucide="trash-2" class="w-3 h-3"></i>
-                            Supprimer
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        lucide.createIcons();
-    } catch (error) {
-        container.innerHTML = '<p class="text-red-500">Erreur de chargement</p>';
-    }
-}
-
-// Éditer un contenu outreach
-function editOutreach(item) {
-    editingItem = item;
-    editingType = 'outreach';
-    loadAdminOutreach();
-}
-
-// Sauvegarder l'édition
-async function saveOutreachEdit(id) {
-    const data = {
-        title: document.getElementById(`edit-out-title-${id}`).value,
-        description: document.getElementById(`edit-out-description-${id}`).value,
-        link: document.getElementById(`edit-out-link-${id}`).value,
-        embed_url: document.getElementById(`edit-out-embed-${id}`).value
-    };
-    
-    await updateOutreachData(id, data);
-}
-
-async function handleAddOutreach(e) {
-    e.preventDefault();
-    
-    const outreach = {
-        title: document.getElementById('out-title').value,
-        description: document.getElementById('out-description').value,
-        link: document.getElementById('out-link').value,
-        embed_url: document.getElementById('out-embed').value
-    };
-    
-    try {
-        await addOutreach(outreach);
-        alert('Contenu ajouté avec succès !');
-        hideAddForm('outreach');
-        e.target.reset();
-        await loadAdminOutreach();
-    } catch (error) {
-        alert('Erreur lors de l\'ajout');
-    }
-}
-
-// ============================================
-// MODIFICATION DES ÉLÉMENTS
-// ============================================
-
-// Variables globales pour l'édition
-let editingItem = null;
-let editingType = null;
-
-// Afficher le formulaire d'édition
-function showEditForm(type, item) {
-    editingItem = item;
-    editingType = type;
-    
-    // Masquer l'affichage normal et afficher le formulaire
-    const container = document.getElementById(`${type}s-admin-list`);
-    loadAdminData(type);
-}
-
-// Annuler l'édition
-function cancelEdit() {
-    editingItem = null;
-    editingType = null;
-    loadAllAdminData();
-}
-
-// Mettre à jour une publication
-async function updatePublicationData(id, data) {
-    try {
-        await updatePublication(id, data);
-        alert('Publication modifiée avec succès !');
-        editingItem = null;
-        await loadAdminPublications();
-    } catch (error) {
-        alert('Erreur lors de la modification');
-    }
-}
-
-// Mettre à jour un collaborateur
-async function updateCollaboratorData(id, data) {
-    try {
-        await updateCollaborator(id, data);
-        alert('Collaborateur modifié avec succès !');
-        editingItem = null;
-        await loadAdminCollaborators();
-    } catch (error) {
-        alert('Erreur lors de la modification');
-    }
-}
-
-// Mettre à jour un enseignement
-async function updateTeachingData(id, data) {
-    try {
-        await updateTeaching(id, data);
-        alert('Enseignement modifié avec succès !');
-        editingItem = null;
-        await loadAdminTeaching();
-    } catch (error) {
-        alert('Erreur lors de la modification');
-    }
-}
-
-// Mettre à jour un contenu outreach
-async function updateOutreachData(id, data) {
-    try {
-        await updateOutreach(id, data);
-        alert('Contenu modifié avec succès !');
-        editingItem = null;
-        await loadAdminOutreach();
-    } catch (error) {
-        alert('Erreur lors de la modification');
-    }
-}
-
-// ============================================
-// SUPPRESSION
-// ============================================
-
-async function deleteItem(type, id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+async function enterDashboard(session) {
+    const { data: isAdmin, error } = await db.rpc('is_admin');
+    if (error || !isAdmin) {
+        await db.auth.signOut();
+        showView('login');
+        $('login-error').textContent = error
+            ? 'Configuration manquante : exécutez supabase/schema.sql.'
+            : "Ce compte n'a pas les droits d'administration.";
         return;
     }
-    
-    try {
-        switch(type) {
-            case 'publication':
-                await deletePublication(id);
-                await loadAdminPublications();
-                break;
-            case 'collaborator':
-                await deleteCollaborator(id);
-                await loadAdminCollaborators();
-                break;
-            case 'teaching':
-                await deleteTeaching(id);
-                await loadAdminTeaching();
-                break;
-            case 'outreach':
-                await deleteOutreach(id);
-                await loadAdminOutreach();
-                break;
-        }
-        alert('Élément supprimé avec succès !');
-    } catch (error) {
-        alert('Erreur lors de la suppression');
-    }
+    $('admin-email').textContent = session.user.email;
+    showView('dashboard');
+    loadSection(state.section);
 }
 
-// ============================================
-// INITIALISATION
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Vérifier l'accès admin
-    if (!checkAdminAccess()) {
+async function handleLogin(e) {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const submit = e.target.querySelector('[type="submit"]');
+    submit.disabled = true;
+    $('login-error').textContent = '';
+    const { data, error } = await db.auth.signInWithPassword({
+        email: String(form.get('email')).trim(),
+        password: String(form.get('password')),
+    });
+    submit.disabled = false;
+    if (error) {
+        $('login-error').textContent = 'Identifiants incorrects.';
         return;
     }
-    
-    // Charger les données
-    showAdminSection('publications');
-    loadAllAdminData();
-    
-    // Initialiser les icônes Lucide
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+    e.target.reset();
+    enterDashboard(data.session);
+}
+
+// --- Initialisation -----------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', async () => {
+    $('login-form').addEventListener('submit', handleLogin);
+    $('logout-btn').addEventListener('click', async () => {
+        await db.auth.signOut();
+        showView('login');
+    });
+
+    $('admin-tabs').addEventListener('click', (e) => {
+        const tab = e.target.closest('[data-section]');
+        if (tab) loadSection(tab.dataset.section);
+    });
+    $('add-btn').addEventListener('click', () => openEditor());
+    $('items').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const id = btn.closest('[data-id]').dataset.id;
+        const item = state.items.find((i) => String(i.id) === id);
+        if (btn.dataset.action === 'edit') openEditor(item);
+        if (btn.dataset.action === 'delete') deleteItem(id);
+        if (btn.dataset.action === 'up') moveItem(id, -1);
+        if (btn.dataset.action === 'down') moveItem(id, 1);
+    });
+
+    $('items').addEventListener('error', (e) => {
+        if (e.target.tagName === 'IMG') e.target.remove();
+    }, true);
+    $('editor-form').addEventListener('submit', saveEditor);
+    $('editor').addEventListener('click', (e) => {
+        if (e.target.closest('[data-close]') || e.target === $('editor')) $('editor').close();
+    });
+
+    db.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') showView('login');
+    });
+
+    const { data } = await db.auth.getSession();
+    if (data.session) enterDashboard(data.session);
+    else showView('login');
 });

@@ -1,99 +1,125 @@
-// Globe initialization using the UMD (global) build of Globe.gl and Three.js
-// This file defines window.initGlobe() which initializes the globe in #globe-container
+// ============================================
+// GLOBE DES COLLABORATIONS
+// ============================================
+// globe.gl (~1 Mo) n'est chargé que lorsque la section devient visible.
 
-(function() {
-    function initGlobe() {
-        // Robust init: wait for global `Globe` to be available (it's provided by globe.gl UMD)
-        if (!document.getElementById('globe-container')) return;
-        if (window._globeInstance) return; // already initialized
+const GLOBE_SRC = 'https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js';
+const GLOBE_TEXTURE = 'https://cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-blue-marble.jpg';
 
-        const maxRetries = 20;
-        let attempts = 0;
+const HOME = { name: 'CIRAD — Montpellier', lat: 43.6108, lng: 3.8767 };
 
-        const tryInit = () => {
-            attempts++;
-            if (typeof Globe === 'function') {
-                try {
-                    const popup = document.getElementById('globe-popup');
-                    const closeBtn = document.getElementById('globe-popup-close');
-                    closeBtn?.addEventListener('click', () => {
-                        popup.classList.add('hidden');
-                        popup.setAttribute('aria-hidden', 'true');
-                    });
+// Coordonnées approximatives (capitale / centre de recherche principal)
+const COUNTRY_COORDS = {
+    france: [46.6, 2.4],
+    spain: [41.65, -0.88], espagne: [41.65, -0.88],
+    usa: [37.5, -84.5], 'united states': [37.5, -84.5], 'états-unis': [37.5, -84.5],
+    mexico: [22.77, -102.58], mexique: [22.77, -102.58],
+    tunisia: [36.8, 10.18], tunisie: [36.8, 10.18],
+    morocco: [34.02, -6.84], maroc: [34.02, -6.84],
+    algeria: [36.75, 3.06], algérie: [36.75, 3.06],
+    italy: [41.9, 12.5], italie: [41.9, 12.5],
+    germany: [52.52, 13.4], allemagne: [52.52, 13.4],
+    portugal: [38.72, -9.14],
+    belgium: [50.85, 4.35], belgique: [50.85, 4.35],
+    netherlands: [52.37, 4.9], 'pays-bas': [52.37, 4.9],
+    'united kingdom': [51.5, -0.12], uk: [51.5, -0.12], 'royaume-uni': [51.5, -0.12],
+    canada: [45.42, -75.7],
+    brazil: [-15.8, -47.9], brésil: [-15.8, -47.9],
+    senegal: [14.7, -17.45], sénégal: [14.7, -17.45],
+    egypt: [30.04, 31.24], égypte: [30.04, 31.24],
+    china: [39.9, 116.4], chine: [39.9, 116.4],
+    india: [28.6, 77.2], inde: [28.6, 77.2],
+    australia: [-35.3, 149.1], australie: [-35.3, 149.1],
+};
 
-                    // Ensure container has explicit height (in case CSS missing)
-                    const container = document.getElementById('globe-container');
-                    if (container) {
-                        const cs = window.getComputedStyle(container);
-                        if (!cs.height || cs.height === '0px') {
-                            container.style.height = '520px';
-                        }
-                    }
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Échec du chargement : ${src}`));
+        document.head.appendChild(script);
+    });
+}
 
-                    const points = [
-                        { name: 'CIRAD - Montpellier', lat: 43.6045, lng: 1.444, color: '#ff8c00', size: 1.2, alt: 0.09, desc: 'CIRAD, Montpellier, France' },
-                        { name: 'Université Paris', lat: 48.8566, lng: 2.3522, color: '#ef4444', size: 1.1, alt: 0.08, desc: 'Paris, France' },
-                        { name: 'Université Rabat', lat: 34.0209, lng: -6.84165, color: '#f59e0b', size: 1.0, alt: 0.085, desc: 'Rabat, Morocco' }
-                    ];
+function countryPoints(collaborators) {
+    const byCountry = new Map();
+    collaborators.forEach((c) => {
+        const key = (c.country || '').trim().toLowerCase();
+        const coords = COUNTRY_COORDS[key];
+        if (!coords) return;
+        if (!byCountry.has(key)) byCountry.set(key, { name: c.country.trim(), lat: coords[0], lng: coords[1], people: [] });
+        byCountry.get(key).people.push(c.name);
+    });
+    return [...byCountry.values()];
+}
 
-                    const globe = Globe()(container)
-                        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                        .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-                        .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
-                        .pointsData(points)
-                        .pointLat(d => d.lat)
-                        .pointLng(d => d.lng)
-                        .pointColor(d => d.color || '#ff8c00')
-                        .pointRadius(d => Math.max(0.4, (d.size || 0.8)))
-                        .pointAltitude(d => (d.alt || 0.08))
-                        .pointsTransitionDuration(400)
-                        .pointLabel(d => `<div style="font-size:12px"><b>${d.name}</b><div>${d.desc}</div></div>`)
-                        .onPointClick(d => {
-                            alert(d.name + '\n' + (d.desc || ''));
-                        });
-
-                    globe.controls().autoRotate = true;
-                    globe.controls().autoRotateSpeed = 0.4;
-
-
-                    // Set a default camera view to better frame Europe/Africa.
-                    // Adjust the longitude/altitude based on container aspect ratio so
-                    // wide screens center Europe instead of the Americas.
-                    try {
-                        const container = document.getElementById('globe-container');
-                        const w = container ? container.offsetWidth : window.innerWidth;
-                        const h = container ? container.offsetHeight : window.innerHeight;
-                        const aspect = w / Math.max(h, 1);
-
-                        // If very wide, shift longitude east to center Europe/Africa visually
-                        if (aspect > 2.0) {
-                            globe.pointOfView({ lat: 20, lng: 20, altitude: 1.8 }, 800);
-                        } else if (aspect > 1.6) {
-                            globe.pointOfView({ lat: 18, lng: 10, altitude: 2.0 }, 800);
-                        } else {
-                            globe.pointOfView({ lat: 20, lng: 0, altitude: 2.2 }, 800);
-                        }
-                    } catch (e) {
-                        console.warn('pointOfView not available on this Globe build', e);
-                    }
-
-                    window._globeInstance = globe;
-                    // done
-                } catch (err) {
-                    console.error('Globe init failed:', err);
-                }
-            } else {
-                if (attempts < maxRetries) {
-                    // retry after short delay
-                    setTimeout(tryInit, 150);
-                } else {
-                    console.error('Globe.gl did not load (Globe is undefined). Check CDN load and network.');
-                }
-            }
-        };
-
-        tryInit();
+function initGlobe(container, collaborators = []) {
+    if (!container) return;
+    const supportsWebGL = (() => {
+        try { return !!document.createElement('canvas').getContext('webgl'); } catch { return false; }
+    })();
+    if (!supportsWebGL) {
+        container.classList.add('globe-fallback');
+        return;
     }
 
-    window.initGlobe = initGlobe;
-})();
+    const observer = new IntersectionObserver(async (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        try {
+            if (typeof Globe !== 'function') await loadScript(GLOBE_SRC);
+            buildGlobe(container, countryPoints(collaborators));
+        } catch (err) {
+            console.error(err);
+            container.classList.add('globe-fallback');
+        }
+    }, { rootMargin: '200px' });
+    observer.observe(container);
+}
+
+function buildGlobe(container, points) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const arcs = points.map((p) => ({ startLat: HOME.lat, startLng: HOME.lng, endLat: p.lat, endLng: p.lng }));
+    const markers = [{ ...HOME, home: true, people: [] }, ...points];
+
+    const globe = Globe()(container)
+        .backgroundColor('rgba(0,0,0,0)')
+        .globeImageUrl(GLOBE_TEXTURE)
+        .showAtmosphere(true)
+        .atmosphereColor('#9fd3b8')
+        .atmosphereAltitude(0.18)
+        .arcsData(arcs)
+        .arcColor(() => ['rgba(232, 176, 92, 0.95)', 'rgba(159, 211, 184, 0.95)'])
+        .arcStroke(0.6)
+        .arcAltitudeAutoScale(0.45)
+        .arcDashLength(0.5)
+        .arcDashGap(0.25)
+        .arcDashAnimateTime(reduceMotion ? 0 : 3200)
+        .pointsData(markers)
+        .pointColor((d) => (d.home ? '#e8b05c' : '#ffffff'))
+        .pointAltitude(0.01)
+        .pointRadius((d) => (d.home ? 0.9 : 0.45 + d.people.length * 0.12))
+        .pointLabel((d) => `
+            <div class="globe-tip">
+                <strong>${esc(d.name)}</strong>
+                ${d.home ? '<span>Base de recherche</span>' : d.people.map((n) => `<span>${esc(n)}</span>`).join('')}
+            </div>`);
+
+    const controls = globe.controls();
+    controls.enableZoom = false;
+    controls.autoRotate = !reduceMotion;
+    controls.autoRotateSpeed = 0.35;
+    globe.pointOfView({ lat: 30, lng: -30, altitude: 2.1 });
+
+    const resize = () => globe.width(container.clientWidth).height(container.clientHeight);
+    new ResizeObserver(resize).observe(container);
+    resize();
+
+    // Pause de la rotation quand le globe n'est plus visible (économie CPU/batterie)
+    new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) globe.resumeAnimation();
+        else globe.pauseAnimation();
+    }).observe(container);
+}
