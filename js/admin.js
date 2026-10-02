@@ -29,6 +29,8 @@ const SECTIONS = {
             { name: 'country', label: 'Pays', required: true, hint: 'En anglais ou en français (France, Spain, USA, Tunisia…) — utilisé pour le globe' },
             { name: 'link', label: 'Lien vers le profil', type: 'url' },
             { name: 'image', label: 'URL de la photo', type: 'url' },
+            { name: 'lat', label: 'Latitude (optionnel)', type: 'number', numeric: true, min: -90, max: 90, hint: 'Position exacte sur le globe. Vide = position de l\'institution si connue, sinon centre du pays.' },
+            { name: 'lng', label: 'Longitude (optionnel)', type: 'number', numeric: true, min: -180, max: 180 },
         ],
         summary: (c) => [[c.title, c.institution].filter(Boolean).join(' — '), c.country],
     },
@@ -137,7 +139,7 @@ function fieldHtml(field, value) {
     const common = `id="${id}" name="${field.name}" ${field.required ? 'required' : ''}`;
     const input = field.type === 'textarea'
         ? `<textarea ${common} rows="${field.rows || 4}">${esc(value)}</textarea>`
-        : `<input ${common} type="${field.type || 'text'}" value="${esc(value)}"${field.min ? ` min="${field.min}" max="${field.max}"` : ''}>`;
+        : `<input ${common} type="${field.type || 'text'}" value="${esc(value)}"${field.min !== undefined ? ` min="${field.min}" max="${field.max}"` : ''}${field.numeric ? ' step="any"' : ''}>`;
     return `
         <label for="${id}">
             <span>${esc(field.label)}${field.required ? ' <em>*</em>' : ''}</span>
@@ -161,7 +163,7 @@ function readEditor() {
     const row = {};
     SECTIONS[state.section].fields.forEach((f) => {
         const value = String(form.get(f.name) ?? '').trim();
-        row[f.name] = value;
+        row[f.name] = f.numeric ? (value === '' ? null : Number(value)) : value;
     });
     if ('embed_url' in row && row.embed_url) {
         const embed = toEmbedUrl(row.embed_url);

@@ -3,12 +3,16 @@
 Site statique (HTML/CSS/JS, aucun build) + contenu dynamique stocké dans Supabase.
 
 ```
-index.html          site public (une page, sections ancrées)
+index.html          accueil (présentation, recherche, accès aux sections)
+publications.html   publications (recherche plein texte)
+collaborateurs.html globe interactif + liste filtrable (recherche, pays, lieu)
+enseignement.html   enseignement & formation
+mediation.html      médiation scientifique (vidéos, podcasts)
 admin.html          administration du contenu
 css/style.css       design system + site public
 css/admin.css       styles de l'administration
 js/supabase.js      client Supabase, accès aux données, helpers de sécurité (esc, safeUrl, toEmbedUrl)
-js/main.js          rendu du site public
+js/main.js          rendu du site public (une fonction par page, via <body data-page>)
 js/globe.js         globe des collaborations (globe.gl chargé à la demande)
 js/admin.js         CRUD générique (publications, collaborateurs, enseignement, médiation)
 supabase/schema.sql migration sécurité : Supabase Auth + RLS
@@ -33,5 +37,8 @@ Les droits sont vérifiés **côté base** (RLS + `public.is_admin()`) : la clé
 ## Contenu
 
 - **Publications** triées par année décroissante ; le nom de Wafa Malik est mis en gras dans les auteurs.
-- **Collaborateurs** regroupés par pays ; le champ *Pays* alimente le globe (liste des pays reconnus dans `js/globe.js`, `COUNTRY_COORDS`). Ordre réglable depuis l'admin (↑ / ↓).
+- **Collaborateurs** affichés dans l'ordre réglé depuis l'admin (↑ / ↓), filtrables par recherche, pays ou lieu.
+  Position sur le globe : champs *Latitude/Longitude* si remplis, sinon institution connue
+  (`INSTITUTION_COORDS` dans `js/globe.js`), sinon centre du pays (`COUNTRY_COORDS`).
+  Les points proches sont regroupés ; un clic sur un point affiche les collaborateurs du lieu.
 - **Médiation** : coller un lien YouTube ou Vimeo, il est converti en lecteur intégré (chargé au clic, domaine `youtube-nocookie`).
