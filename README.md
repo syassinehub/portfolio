@@ -15,6 +15,7 @@ js/supabase.js      client Supabase, accès aux données, helpers de sécurité 
 js/main.js          rendu du site public (une fonction par page, via <body data-page>)
 js/globe.js         globe des collaborations (globe.gl chargé à la demande)
 js/nature.js        fond animé : écoulement d'eau/azote dans un bassin versant (canvas, bruit de Perlin)
+js/landscape.js     paysage génératif : collines, arbres fractals et herbe dans le vent, feuilles portées
 js/motion.js        animations GSAP + ScrollTrigger + SplitText, défilement Lenis, rideau de transition
 js/motion-flag.js   active les animations (sauf « réduire les animations ») avant le rendu
 js/vendor/          GSAP 3.15 et Lenis 1.3 (copies locales, voir README.txt)
