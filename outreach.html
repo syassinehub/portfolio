@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publications — Dr. Wafa Malik</title>
-    <meta name="description" content="Scientific publications by Wafa Malik: nitrogen, eutrophication, water quality, agro-hydrological modelling.">
+    <title>Science outreach — Dr. Wafa Malik</title>
+    <meta name="description" content="Podcasts and science communication: eutrophication, nitrogen and agriculture.">
     <meta name="author" content="Wafa Malik">
     <meta name="theme-color" content="#16352a">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
     <meta property="og:type" content="profile">
-    <meta property="og:title" content="Publications — Dr. Wafa Malik">
-    <meta property="og:description" content="Scientific publications by Wafa Malik: nitrogen, eutrophication, water quality, agro-hydrological modelling.">
+    <meta property="og:title" content="Science outreach — Dr. Wafa Malik">
+    <meta property="og:description" content="Podcasts and science communication: eutrophication, nitrogen and agriculture.">
     <meta property="og:image" content="assets/profile.jpg">
     <meta property="og:locale" content="en_GB">
     <meta name="twitter:card" content="summary">
@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/motion-flag.js"></script>
 </head>
-<body data-page="publications">
+<body data-page="outreach">
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
@@ -38,10 +38,10 @@
             </button>
             <nav id="site-nav" class="site-nav" aria-label="Main navigation">
                 <a href="index.html">Home</a>
-                <a href="publications.html" aria-current="page">Publications</a>
+                <a href="publications.html">Publications</a>
                 <a href="collaborators.html">Collaborators</a>
                 <a href="teaching.html">Teaching</a>
-                <a href="outreach.html">Outreach</a>
+                <a href="outreach.html" aria-current="page">Outreach</a>
                 <a href="#contact" class="nav-cta">Contact</a>
             </nav>
         </div>
@@ -50,10 +50,9 @@
     <main id="main">
         <section class="page-hero">
             <div class="container">
-                <p class="eyebrow">Publications</p>
-                <h1>Research &amp; contributions</h1>
-                <p class="page-intro">Articles and work on nitrogen cycling, water quality and agro-hydrological modelling.</p>
-                <a class="btn btn-ghost page-hero-link" href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=en" target="_blank" rel="noopener">Full list on Google Scholar ↗</a>
+                <p class="eyebrow">Outreach</p>
+                <h1>Science outreach</h1>
+                <p class="page-intro">Podcasts, videos and talks sharing research beyond academia.</p>
             </div>
             <div class="waves waves-bottom" aria-hidden="true">
                 <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -66,17 +65,9 @@
 
         <section class="section section-tight">
             <div class="container narrow">
-                <div class="filters" role="search">
-                    <label class="search">
-                        <span class="visually-hidden">Search publications</span>
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                        <input type="search" id="pub-search" placeholder="Title, author, journal…" autocomplete="off">
-                    </label>
+                <div id="outreach-list" class="outreach-list" aria-busy="true">
+                    <div class="skeleton skeleton-card"></div>
                 </div>
-                <p id="pub-count" class="result-count" aria-live="polite"></p>
-                <ol id="publications-list" class="pub-list" aria-busy="true">
-                    <li class="skeleton"></li><li class="skeleton"></li>
-                </ol>
             </div>
         </section>
     </main>

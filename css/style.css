@@ -226,7 +226,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
         radial-gradient(800px 400px at -10% 110%, rgba(43, 108, 143, .35), transparent 60%),
         var(--forest);
     color: #fff;
-    padding: clamp(56px, 9vw, 112px) 0 clamp(72px, 10vw, 128px);
+    padding: clamp(56px, 9vw, 112px) 0 calc(clamp(72px, 10vw, 128px) + clamp(24px, 4vw, 48px));
 }
 .hero-contours {
     position: absolute;
@@ -831,7 +831,7 @@ a.collab:hover .arrow { opacity: 1; }
 .page-hero {
     position: relative;
     overflow: hidden;
-    padding: clamp(56px, 8vw, 96px) 0 clamp(48px, 6vw, 72px);
+    padding: clamp(56px, 8vw, 96px) 0 calc(clamp(48px, 6vw, 72px) + clamp(40px, 6vw, 80px));
     color: #fff;
     background:
         radial-gradient(900px 380px at 90% -20%, rgba(159, 211, 184, .22), transparent 60%),
@@ -972,6 +972,113 @@ a.collab:hover .arrow { opacity: 1; }
 
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.in { opacity: 1; transform: none; }
+
+/* ---------- Animations « nature » ---------- */
+
+html.lenis { scroll-behavior: auto; }
+
+/* Écoulement (canvas, voir js/nature.js) : noir + screen = seules les traînées claires apparaissent */
+.flow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    mix-blend-mode: screen;
+    opacity: .85;
+    pointer-events: none;
+}
+.hero > .container,
+.page-hero > .container { position: relative; z-index: 1; }
+.hero-contours { z-index: 0; }
+
+/* Vagues : trois couches décalées qui glissent en boucle */
+.waves {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: clamp(40px, 6vw, 80px);
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+.waves svg { width: 200%; height: 100%; display: block; }
+.waves-bottom { bottom: -1px; }
+.waves .wave { transform-box: fill-box; animation: wave-drift 22s linear infinite; }
+.waves .wave-1 { fill: rgba(159, 211, 184, .14); animation-duration: 26s; }
+.waves .wave-2 { fill: rgba(126, 186, 214, .22); animation-duration: 17s; animation-direction: reverse; }
+.waves .wave-3 { fill: var(--wave-color, var(--paper)); animation-duration: 12s; }
+.waves-bottom .wave-1 { transform: translateY(-14%); }
+.waves-bottom .wave-2 { transform: translateY(-6%); }
+@keyframes wave-drift {
+    from { translate: 0 0; }
+    to { translate: -50% 0; }
+}
+.site-footer { position: relative; }
+.waves-top { top: -1px; transform: scaleY(-1); }
+.waves-top .wave-1 { fill: rgba(22, 53, 42, .08); }
+.waves-top .wave-2 { fill: rgba(22, 53, 42, .14); }
+.waves-top .wave-3 { fill: var(--wave-top, var(--paper)); }
+body[data-page="home"] .site-footer { --wave-top: var(--sand); }
+.site-footer > .container { position: relative; z-index: 2; }
+
+/* Pousse (intitulés de section, rideau) */
+.sprout {
+    width: 1.3em;
+    height: 1.3em;
+    margin-right: .4em;
+    vertical-align: -.25em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.page-hero .eyebrow .sprout { color: var(--mint); }
+
+/* Rideau de transition entre pages : une vague qui monte et recouvre */
+.page-curtain {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 200;
+    pointer-events: none;
+    transform: translateY(110%);
+}
+.curtain-body {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--forest);
+}
+.curtain-body .sprout { width: 64px; height: 64px; margin: 0; color: var(--mint); stroke-width: 1.2; }
+.curtain-wave { position: absolute; left: 0; width: 100%; height: 120px; fill: var(--forest); }
+.curtain-wave-top { bottom: calc(100% - 1px); }
+.curtain-wave-bottom { top: calc(100% - 1px); transform: scaleY(-1); }
+
+/* Arrivée depuis une autre page : la page est couverte avant même le chargement du JS */
+html.motion.curtain-in::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: var(--forest);
+}
+
+/* États initiaux masqués (révélés par GSAP ; filet de sécurité dans motion-flag.js) */
+html.motion .hero .eyebrow,
+html.motion .hero h1,
+html.motion .hero-lede,
+html.motion .hero-actions > *,
+html.motion .hero-links li,
+html.motion .hero-portrait,
+html.motion .page-hero .eyebrow,
+html.motion .page-hero h1,
+html.motion .page-intro,
+html.motion .page-hero-link,
+html.motion .globe-panel { visibility: hidden; }
 
 /* ---------- Responsive ---------- */
 

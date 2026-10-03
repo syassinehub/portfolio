@@ -3,17 +3,21 @@
 Site statique (HTML/CSS/JS, aucun build) + contenu dynamique stocké dans Supabase.
 
 ```
-index.html          accueil (présentation, recherche, accès aux sections)
+index.html          accueil (présentation, recherche, accès aux sections) — site public en anglais
 publications.html   publications (recherche plein texte)
-collaborateurs.html globe interactif + liste filtrable (recherche, pays, lieu)
-enseignement.html   enseignement & formation
-mediation.html      médiation scientifique (vidéos, podcasts)
+collaborators.html  globe interactif + liste filtrable (recherche, pays, lieu)
+teaching.html       enseignement & formation
+outreach.html       médiation scientifique (vidéos, podcasts)
 admin.html          administration du contenu
 css/style.css       design system + site public
 css/admin.css       styles de l'administration
 js/supabase.js      client Supabase, accès aux données, helpers de sécurité (esc, safeUrl, toEmbedUrl)
 js/main.js          rendu du site public (une fonction par page, via <body data-page>)
 js/globe.js         globe des collaborations (globe.gl chargé à la demande)
+js/nature.js        fond animé : écoulement d'eau/azote dans un bassin versant (canvas, bruit de Perlin)
+js/motion.js        animations GSAP + ScrollTrigger + SplitText, défilement Lenis, rideau de transition
+js/motion-flag.js   active les animations (sauf « réduire les animations ») avant le rendu
+js/vendor/          GSAP 3.15 et Lenis 1.3 (copies locales, voir README.txt)
 js/admin.js         CRUD générique (publications, collaborateurs, enseignement, médiation)
 supabase/schema.sql migration sécurité : Supabase Auth + RLS
 ```

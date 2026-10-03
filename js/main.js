@@ -67,7 +67,13 @@ function renderState(container, message, isError = false) {
 }
 
 function plural(n, word) {
-    return `${n} ${word}${n > 1 ? 's' : ''}`;
+    return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
+// Défilement doux vers un élément (passe par Lenis quand les animations sont actives)
+function scrollToEl(el, block = 'start') {
+    if (window.__lenis) window.__lenis.scrollTo(el, { offset: block === 'start' ? -90 : -120 });
+    else el.scrollIntoView({ behavior: 'smooth', block });
 }
 
 const normalize = (value) => String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -89,7 +95,7 @@ function publicationHtml(pub) {
                 <h3>${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(pub.title)}</a>` : esc(pub.title)}</h3>
                 <p class="pub-authors">${highlightOwner(pub.authors)}</p>
                 ${meta ? `<p class="pub-meta">${meta}</p>` : ''}
-                ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener">Lire l'article ↗</a>` : ''}
+                ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener">Read the article ↗</a>` : ''}
             </div>
             ${image ? `<img class="pub-thumb" src="${esc(image)}" alt="" loading="lazy" decoding="async">` : ''}
         </li>`;
@@ -102,17 +108,17 @@ async function initPublications() {
         items = await Content.list('publications');
     } catch (err) {
         console.error(err);
-        return renderState(container, 'Impossible de charger les publications pour le moment.', true);
+        return renderState(container, 'Publications could not be loaded right now.', true);
     }
 
     const render = () => {
         const query = normalize($('pub-search').value.trim());
         const shown = items.filter((p) => !query || normalize([p.title, p.authors, p.journal, p.year].join(' ')).includes(query));
-        $('pub-count').textContent = query ? `${plural(shown.length, 'résultat')} sur ${items.length}` : plural(items.length, 'publication');
+        $('pub-count').textContent = query ? `${plural(shown.length, 'result')} of ${items.length}` : plural(items.length, 'publication');
         container.removeAttribute('aria-busy');
         container.innerHTML = shown.length
             ? shown.map(publicationHtml).join('')
-            : `<li class="state">${items.length ? 'Aucune publication ne correspond à la recherche.' : 'Aucune publication pour le moment.'}</li>`;
+            : `<li class="state">${items.length ? 'No publication matches your search.' : 'No publications yet.'}</li>`;
         observeReveal(container);
     };
     $('pub-search').addEventListener('input', render);
@@ -155,8 +161,8 @@ async function initCollaborators() {
         people = await Content.list('collaborators');
     } catch (err) {
         console.error(err);
-        renderState($('location-list'), 'Globe indisponible.', true);
-        return renderState(list, 'Impossible de charger les collaborateurs pour le moment.', true);
+        renderState($('location-list'), 'Globe unavailable.', true);
+        return renderState(list, 'Collaborators could not be loaded right now.', true);
     }
 
     const locations = buildLocations(people);
@@ -175,12 +181,12 @@ async function initCollaborators() {
             <button type="button" class="chip-btn" data-country="${esc(value)}" aria-pressed="${filters.country === value && !filters.location}">
                 ${esc(label)} <span>${count}</span>
             </button>`;
-        $('country-filters').innerHTML = chip('', 'Tous', people.length)
+        $('country-filters').innerHTML = chip('', 'All', people.length)
             + countries.map(([country, n]) => chip(country, country, n)).join('')
             + (filters.location ? `
                 <button type="button" class="chip-btn chip-location" data-clear-location aria-pressed="true">
                     ${esc(filters.location.label)} <span aria-hidden="true">✕</span>
-                    <span class="visually-hidden">Retirer le filtre de lieu</span>
+                    <span class="visually-hidden">Remove location filter</span>
                 </button>` : '');
     }
 
@@ -193,12 +199,12 @@ async function initCollaborators() {
         });
         const filtered = shown.length !== people.length;
         $('collab-count').textContent = filtered
-            ? `${plural(shown.length, 'collaborateur')} sur ${people.length}`
-            : plural(people.length, 'collaborateur');
+            ? `${plural(shown.length, 'collaborator')} of ${people.length}`
+            : plural(people.length, 'collaborator');
         list.removeAttribute('aria-busy');
         list.innerHTML = shown.length
             ? shown.map((c) => collaboratorHtml(c)).join('')
-            : `<li class="state">Aucun collaborateur ne correspond. <button type="button" class="link-btn" data-reset>Réinitialiser les filtres</button></li>`;
+            : `<li class="state">No collaborator matches. <button type="button" class="link-btn" data-reset>Reset filters</button></li>`;
         observeReveal(list);
     }
 
@@ -231,7 +237,7 @@ async function initCollaborators() {
     function showOverview() {
         side.classList.remove('has-selection');
         side.querySelector('.globe-side-inner').innerHTML = `
-            <p class="globe-hint">Cliquez sur un point du globe ou choisissez un lieu.</p>
+            <p class="globe-hint">Click a point on the globe or pick a location.</p>
             <ul class="location-list">
                 ${locations.map((l) => `
                     <li><button type="button" data-location="${esc(l.key)}">
@@ -243,18 +249,18 @@ async function initCollaborators() {
     function showLocation(loc) {
         side.classList.add('has-selection');
         side.querySelector('.globe-side-inner').innerHTML = `
-            <button type="button" class="globe-back" data-back>← Tous les lieux</button>
+            <button type="button" class="globe-back" data-back>← All locations</button>
             <h2 class="globe-place">${esc(loc.label)}</h2>
-            <p class="globe-sub">${plural(loc.people.length, 'collaborateur')}</p>
+            <p class="globe-sub">${plural(loc.people.length, 'collaborator')}</p>
             <ul class="globe-people">${loc.people.map((c) => collaboratorHtml(c, { compact: true })).join('')}</ul>
-            <button type="button" class="btn btn-primary btn-block" data-filter-location="${esc(loc.key)}">Afficher dans la liste ↓</button>`;
+            <button type="button" class="btn btn-primary btn-block" data-filter-location="${esc(loc.key)}">Show in the list ↓</button>`;
     }
 
     function select(loc) {
         if (!loc) return showOverview();
         showLocation(loc);
         // Sur mobile le panneau est sous le globe : on l'amène à l'écran
-        if (window.matchMedia('(max-width: 960px)').matches && !globeCtl?.isExpanded()) side.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (window.matchMedia('(max-width: 960px)').matches && !globeCtl?.isExpanded()) scrollToEl(side, 'nearest');
     }
 
     side.addEventListener('click', (e) => {
@@ -276,7 +282,7 @@ async function initCollaborators() {
             filters.location = locations.find((l) => l.key === filterBtn.dataset.filterLocation);
             filters.country = '';
             update();
-            $('collab-filters').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            scrollToEl($('collab-filters'));
         }
     });
 
@@ -294,9 +300,9 @@ async function initTeaching() {
         items = await Content.list('teaching');
     } catch (err) {
         console.error(err);
-        return renderState(container, 'Impossible de charger les enseignements pour le moment.', true);
+        return renderState(container, 'Teaching could not be loaded right now.', true);
     }
-    if (!items.length) return renderState(container, 'Aucun enseignement pour le moment.');
+    if (!items.length) return renderState(container, 'No teaching entries yet.');
     container.removeAttribute('aria-busy');
     container.innerHTML = items.map((t) => {
         const image = safeUrl(t.image, { image: true });
@@ -322,9 +328,9 @@ async function initOutreach() {
         items = await Content.list('outreach');
     } catch (err) {
         console.error(err);
-        return renderState(container, 'Impossible de charger les contenus pour le moment.', true);
+        return renderState(container, 'Content could not be loaded right now.', true);
     }
-    if (!items.length) return renderState(container, 'Aucun contenu pour le moment.');
+    if (!items.length) return renderState(container, 'No content yet.');
     container.removeAttribute('aria-busy');
     container.innerHTML = items.map((item) => {
         const embed = toEmbedUrl(item.embed_url) || toEmbedUrl(item.link);
@@ -334,7 +340,7 @@ async function initOutreach() {
         return `
             <article class="outreach reveal">
                 ${embed ? `
-                    <button class="video" data-embed="${esc(embed)}" aria-label="Lire la vidéo : ${esc(item.title)}">
+                    <button class="video" data-embed="${esc(embed)}" aria-label="Play video: ${esc(item.title)}">
                         ${thumb ? `<img src="${esc(thumb)}" alt="" loading="lazy" decoding="async">` : ''}
                         <span class="play" aria-hidden="true"></span>
                     </button>` : ''}
@@ -343,10 +349,10 @@ async function initOutreach() {
                     ${first ? `<p>${esc(first)}</p>` : ''}
                     ${rest.length ? `
                         <details>
-                            <summary>Lire la suite</summary>
+                            <summary>Read more</summary>
                             ${rest.map((p) => `<p>${esc(p)}</p>`).join('')}
                         </details>` : ''}
-                    ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener">En savoir plus ↗</a>` : ''}
+                    ${link ? `<a class="text-link" href="${esc(link)}" target="_blank" rel="noopener">Learn more ↗</a>` : ''}
                 </div>
             </article>`;
     }).join('');

@@ -11,10 +11,10 @@ const HOME = { key: 'home', label: 'CIRAD — Montpellier', lat: 43.6108, lng: 3
 // Position des institutions connues (recherche par mot-clé dans le nom de l'institution)
 const INSTITUTION_COORDS = [
     [/kentucky/i, 38.03, -84.5, 'Lexington, Kentucky'],
-    [/florida/i, 29.64, -82.35, 'Gainesville, Floride'],
-    [/\bCITA\b|aragon/i, 41.72, -0.82, 'Saragosse'],
-    [/\bCSIC\b|aula dei/i, 41.72, -0.82, 'Saragosse'],
-    [/IAMZ/i, 41.66, -0.88, 'Saragosse'],
+    [/florida/i, 29.64, -82.35, 'Gainesville, Florida'],
+    [/\bCITA\b|aragon/i, 41.72, -0.82, 'Zaragoza'],
+    [/\bCSIC\b|aula dei/i, 41.72, -0.82, 'Zaragoza'],
+    [/IAMZ/i, 41.66, -0.88, 'Zaragoza'],
     [/zacatecas/i, 22.77, -102.58, 'Zacatecas'],
     [/INRAE|rennes/i, 48.11, -1.68, 'Rennes'],
     [/scheme/i, 48.11, -1.68, 'Rennes'],
@@ -176,7 +176,7 @@ function buildGlobe(container, locations, onSelect) {
         .pointLabel((d) => (touch ? '' : `
             <div class="globe-tip">
                 <strong>${esc(d.label)}</strong>
-                <span>${d.home ? 'Base de recherche' : `${d.people.length} collaborateur${d.people.length > 1 ? 's' : ''} · cliquer pour voir`}</span>
+                <span>${d.home ? 'Research base' : `${d.people.length} collaborator${d.people.length === 1 ? '' : 's'} · click to view`}</span>
             </div>`))
         .onPointHover((d) => {
             hovered = d && !d.home ? d : null;
@@ -256,8 +256,8 @@ function buildGlobe(container, locations, onSelect) {
 
     // --- Aide contextuelle ----------------------------------------------
     const helpText = () => {
-        if (touch) return expanded ? 'Glisser pour tourner · pincer pour zoomer' : 'Pincer pour zoomer · ⤢ plein écran';
-        return expanded ? 'Glisser pour tourner · molette pour zoomer · Échap pour fermer' : 'Glisser pour tourner · Ctrl + molette pour zoomer';
+        if (touch) return expanded ? 'Drag to rotate · pinch to zoom' : 'Pinch to zoom · ⤢ fullscreen';
+        return expanded ? 'Drag to rotate · scroll to zoom · Esc to close' : 'Drag to rotate · Ctrl + scroll to zoom';
     };
     let helpTimer;
     function flashHelp() {
@@ -275,7 +275,7 @@ function buildGlobe(container, locations, onSelect) {
         panel?.classList.toggle('expanded', value);
         document.body.classList.toggle('globe-open', value);
         expandBtn?.setAttribute('aria-pressed', String(value));
-        expandBtn?.setAttribute('aria-label', value ? 'Quitter le plein écran' : 'Plein écran');
+        expandBtn?.setAttribute('aria-label', value ? 'Exit fullscreen' : 'Fullscreen');
         applyTouchMode();
         if (help) help.textContent = helpText();
         requestAnimationFrame(resize);

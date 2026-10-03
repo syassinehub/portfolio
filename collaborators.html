@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collaborateurs — Dr. Wafa Malik</title>
-    <meta name="description" content="Réseau international de recherche de Wafa Malik : France, Espagne, États-Unis, Tunisie, Mexique.">
+    <title>Collaborators — Dr. Wafa Malik</title>
+    <meta name="description" content="Wafa Malik's international research network: France, Spain, United States, Tunisia, Mexico.">
     <meta name="author" content="Wafa Malik">
     <meta name="theme-color" content="#16352a">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://vdcpnozdfsmdyiyepnmu.supabase.co wss://vdcpnozdfsmdyiyepnmu.supabase.co https://cdn.jsdelivr.net; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'">
     <meta property="og:type" content="profile">
-    <meta property="og:title" content="Collaborateurs — Dr. Wafa Malik">
-    <meta property="og:description" content="Réseau international de recherche de Wafa Malik : France, Espagne, États-Unis, Tunisie, Mexique.">
+    <meta property="og:title" content="Collaborators — Dr. Wafa Malik">
+    <meta property="og:description" content="Wafa Malik's international research network: France, Spain, United States, Tunisia, Mexico.">
     <meta property="og:image" content="assets/profile.jpg">
-    <meta property="og:locale" content="fr_FR">
+    <meta property="og:locale" content="en_GB">
     <meta name="twitter:card" content="summary">
 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -20,26 +20,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://vdcpnozdfsmdyiyepnmu.supabase.co" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="js/vendor/lenis.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/motion-flag.js"></script>
 </head>
 <body data-page="collaborators">
-    <a class="skip-link" href="#main">Aller au contenu</a>
+    <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
         <div class="container header-inner">
-            <a href="index.html" class="brand" aria-label="Accueil">
+            <a href="index.html" class="brand" aria-label="Home">
                 <span class="brand-mark" aria-hidden="true">WM</span>
                 <span class="brand-name">Wafa Malik</span>
             </a>
-            <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Ouvrir le menu">
+            <button class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
                 <span></span><span></span>
             </button>
-            <nav id="site-nav" class="site-nav" aria-label="Navigation principale">
-                <a href="index.html">Accueil</a>
+            <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+                <a href="index.html">Home</a>
                 <a href="publications.html">Publications</a>
-                <a href="collaborateurs.html" aria-current="page">Collaborateurs</a>
-                <a href="enseignement.html">Enseignement</a>
-                <a href="mediation.html">Médiation</a>
+                <a href="collaborators.html" aria-current="page">Collaborators</a>
+                <a href="teaching.html">Teaching</a>
+                <a href="outreach.html">Outreach</a>
                 <a href="#contact" class="nav-cta">Contact</a>
             </nav>
         </div>
@@ -48,28 +50,35 @@
     <main id="main">
         <section class="page-hero">
             <div class="container">
-                <p class="eyebrow">Collaborateurs</p>
-                <h1>Un réseau international</h1>
-                <p class="page-intro">Chercheuses et chercheurs avec qui je travaille, entre l'Europe, le Maghreb et les Amériques. Cliquez sur un point du globe pour découvrir qui y travaille.</p>
+                <p class="eyebrow">Collaborators</p>
+                <h1>An international network</h1>
+                <p class="page-intro">Researchers I work with across Europe, North Africa and the Americas. Click a point on the globe to see who works there.</p>
+            </div>
+            <div class="waves waves-bottom" aria-hidden="true">
+                <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                    <path class="wave wave-1" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                    <path class="wave wave-2" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                    <path class="wave wave-3" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                </svg>
             </div>
         </section>
 
         <section class="section section-tight">
             <div class="container">
-                <div id="globe-panel" class="globe-panel">
+                <div id="globe-panel" class="globe-panel" data-lenis-prevent>
                     <div class="globe-stage">
-                        <div id="globe" class="globe" role="img" aria-label="Globe interactif des collaborations"></div>
-                        <div class="globe-tools" role="toolbar" aria-label="Contrôles du globe">
-                            <button type="button" data-globe="in" aria-label="Zoomer" title="Zoomer">
+                        <div id="globe" class="globe" role="img" aria-label="Interactive globe of collaborations"></div>
+                        <div class="globe-tools" role="toolbar" aria-label="Globe controls">
+                            <button type="button" data-globe="in" aria-label="Zoom in" title="Zoom in">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
                             </button>
-                            <button type="button" data-globe="out" aria-label="Dézoomer" title="Dézoomer">
+                            <button type="button" data-globe="out" aria-label="Zoom out" title="Zoom out">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>
                             </button>
-                            <button type="button" data-globe="home" aria-label="Vue d'ensemble" title="Vue d'ensemble">
+                            <button type="button" data-globe="home" aria-label="Overview" title="Overview">
                                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.2 2.4 3.3 5 3.3 8s-1.1 5.6-3.3 8c-2.2-2.4-3.3-5-3.3-8S9.8 6.4 12 4z"/></svg>
                             </button>
-                            <button type="button" data-globe="expand" aria-label="Plein écran" title="Plein écran" aria-pressed="false">
+                            <button type="button" data-globe="expand" aria-label="Fullscreen" title="Fullscreen" aria-pressed="false">
                                 <svg class="icon-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
                                 <svg class="icon-collapse" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
                             </button>
@@ -78,7 +87,7 @@
                     </div>
                     <aside id="globe-side" class="globe-side" aria-live="polite">
                         <div class="globe-side-inner">
-                            <p class="globe-hint">Cliquez sur un point du globe ou choisissez un lieu.</p>
+                            <p class="globe-hint">Click a point on the globe or pick a location.</p>
                             <ul id="location-list" class="location-list"></ul>
                         </div>
                     </aside>
@@ -86,11 +95,11 @@
 
                 <div id="collab-filters" class="filters" role="search">
                     <label class="search">
-                        <span class="visually-hidden">Rechercher un collaborateur</span>
+                        <span class="visually-hidden">Search collaborators</span>
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                        <input type="search" id="collab-search" placeholder="Nom, institution, fonction…" autocomplete="off">
+                        <input type="search" id="collab-search" placeholder="Name, institution, position…" autocomplete="off">
                     </label>
-                    <div id="country-filters" class="filter-chips" role="group" aria-label="Filtrer par pays"></div>
+                    <div id="country-filters" class="filter-chips" role="group" aria-label="Filter by country"></div>
                 </div>
                 <p id="collab-count" class="result-count" aria-live="polite"></p>
                 <ul id="collaborators-list" class="collab-grid" aria-busy="true">
@@ -101,20 +110,27 @@
     </main>
 
     <footer id="contact" class="site-footer">
+        <div class="waves waves-top" aria-hidden="true">
+                <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                    <path class="wave wave-1" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                    <path class="wave wave-2" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                    <path class="wave wave-3" d="M0 60 C 240 20, 480 20, 720 60 S 1200 100, 1440 60 S 1920 20, 2160 60 S 2640 100, 2880 60 V120 H0 Z"/>
+                </svg>
+        </div>
         <div class="container footer-grid">
             <div>
-                <h2>Échangeons.</h2>
-                <p>Collaboration, projet de recherche, intervention ou encadrement : le plus simple est de me contacter via LinkedIn.</p>
+                <h2>Let's talk.</h2>
+                <p>Collaborations, research projects, talks or supervision — the easiest way to reach me is via LinkedIn.</p>
             </div>
             <ul class="footer-links">
                 <li><a href="https://www.linkedin.com/in/wafa-malik-research/" target="_blank" rel="noopener"><img src="assets/linkedin.png" alt="" width="20" height="20">LinkedIn</a></li>
-                <li><a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=fr" target="_blank" rel="noopener"><img src="assets/google.png" alt="" width="20" height="20">Google Scholar</a></li>
+                <li><a href="https://scholar.google.com/citations?user=0rNneGUAAAAJ&amp;hl=en" target="_blank" rel="noopener"><img src="assets/google.png" alt="" width="20" height="20">Google Scholar</a></li>
                 <li><a href="https://www.researchgate.net/profile/Malik-Wafa" target="_blank" rel="noopener"><img src="assets/ResearchGate.png" alt="" width="20" height="20">ResearchGate</a></li>
             </ul>
         </div>
         <div class="container footer-bottom">
             <p>© <span id="year"></span> Wafa Malik · CIRAD, Montpellier</p>
-            <a href="admin.html" class="admin-link">Administration</a>
+            <a href="admin.html" class="admin-link">Admin</a>
         </div>
     </footer>
 
@@ -122,5 +138,12 @@
     <script src="js/supabase.js"></script>
     <script src="js/globe.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/vendor/gsap.min.js"></script>
+    <script src="js/vendor/ScrollTrigger.min.js"></script>
+    <script src="js/vendor/SplitText.min.js"></script>
+    <script src="js/vendor/CustomEase.min.js"></script>
+    <script src="js/vendor/lenis.min.js"></script>
+    <script src="js/nature.js"></script>
+    <script src="js/motion.js"></script>
 </body>
 </html>
