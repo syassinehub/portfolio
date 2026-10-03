@@ -2,7 +2,7 @@
 // PAYSAGE GÉNÉRATIF — ARBRES DANS LE VENT
 // ============================================
 // Illustration plate en trois plans : collines, chênes/oliviers, pins parasols et
-// cyprès (paysage méditerranéen), herbe et feuilles portées.
+// cyprès (paysage méditerranéen), herbe, et feuilles qui se détachent des arbres.
 //
 // Physique : le vent est un champ qui se déplace — une brise de fond, de la
 // turbulence et des rafales qui traversent le paysage de gauche à droite.
@@ -28,6 +28,8 @@
         feature: { wood: tone(0.2), shadow: tone(0.22), main: tone(0.31), light: tone(0.42) },
     };
     const GRASS = tone(0.27);
+    // Feuilles qui tombent : verts clairs et quelques ors d'automne, lisibles sur le fond
+    const LEAF_COLORS = [tone(0.55), tone(0.65), tone(0.48), 'rgb(232, 176, 92)', 'rgb(214, 150, 78)'];
 
     // Générateur pseudo-aléatoire reproductible
     function rng(seed) {
@@ -350,23 +352,94 @@
                 grass.push({ x, y: yAt(2, x) + 3 * dpr, h: (6 + rand() * 12) * dpr * opts.grassScale, lean: (rand() - 0.5) * 0.3, phase: rand() * TAU, bend: 0.3 });
             }
 
-            leaves = Array.from({ length: small ? 5 : opts.leaves }, () => spawnLeaf({}, rand, true));
+            leaves = [];
 
             // pré-chauffage : les arbres démarrent déjà en mouvement, pas figés
             for (let i = 0; i < 90; i++) step(false);
         }
 
-        function spawnLeaf(leaf, rand = Math.random, anywhere = false) {
-            leaf.x = anywhere ? rand() * W : -12 * dpr;
-            leaf.y = H * (0.25 + rand() * 0.45);
-            leaf.vx = (0.4 + rand() * 0.5) * dpr;
-            leaf.vy = 0;
-            leaf.rot = rand() * TAU;
-            leaf.spin = (rand() - 0.5) * 0.05;
-            leaf.size = (2.2 + rand() * 1.8) * dpr;
-            leaf.phase = rand() * TAU;
-            leaf.amber = rand() < 0.3;
-            return leaf;
+        // --- Feuilles qui se détachent des arbres -------------------------------
+        const MAX_LEAVES = small ? 18 : opts.leaves;
+
+        // Une feuille naît dans une touffe de feuillage, d'autant plus souvent que le vent forcit
+        function shedLeaves() {
+            for (const tree of trees) {
+                if (!tree.clumps.length || leaves.length >= MAX_LEAVES) continue;
+                const w = wind.at(tree.x / dpr, t);
+                // feuilles par seconde : quelques-unes par brise, une volée pendant les rafales
+                const rate = (0.5 + Math.max(0, w - 0.45) ** 2 * 8) * (tree.far ? 0.3 : 1) * Math.min(1.6, tree.clumps.length / 5);
+                if (Math.random() > rate * DT) continue;
+                const centers = clumpCenters(tree, t, w);
+                const { c, x, y } = centers[(Math.random() * centers.length) | 0];
+                const a = Math.random() * TAU;
+                const d = Math.sqrt(Math.random()) * c.r * 0.75;
+                leaves.push({
+                    x: x + Math.cos(a) * d,
+                    y: y + Math.sin(a) * d * c.squash,
+                    vx: w * 0.6 * dpr,
+                    vy: -0.2 * dpr,
+                    rot: Math.random() * TAU,
+                    spin: (Math.random() - 0.5) * 0.12,
+                    tumble: Math.random() * TAU,
+                    tumbleSpeed: 0.06 + Math.random() * 0.1,
+                    size: (tree.far ? 2.6 : 4 + Math.random() * 2.6) * dpr,
+                    drag: 0.018 + Math.random() * 0.02, // feuilles légères : plus de prise au vent
+                    color: LEAF_COLORS[(Math.random() * LEAF_COLORS.length) | 0],
+                    landed: false,
+                    alpha: 0,
+                    life: 0,
+                });
+            }
+        }
+
+        // Physique : traînée vers la vitesse du vent, gravité, portance qui oscille
+        // quand la feuille bascule (vol « en feuille morte »), puis repos au sol.
+        function updateLeaves() {
+            for (let i = leaves.length - 1; i >= 0; i--) {
+                const leaf = leaves[i];
+                leaf.life += DT;
+                if (leaf.landed) {
+                    const w = wind.at(leaf.x / dpr, t);
+                    if (w > 0.9) leaf.x += (w - 0.9) * 1.2 * dpr; // glisse au sol sous une forte rafale
+                    leaf.alpha -= DT / 2.5;
+                    if (leaf.alpha <= 0) leaves.splice(i, 1);
+                    continue;
+                }
+                leaf.alpha = Math.min(1, leaf.alpha + DT * 4);
+                const w = wind.at(leaf.x / dpr, t);
+                leaf.tumble += leaf.tumbleSpeed + w * 0.04;
+                const flip = Math.sin(leaf.tumble); // -1..1 : face au vent ou de profil
+                leaf.vx += (w * 1.3 * dpr - leaf.vx) * leaf.drag * (1 + Math.abs(flip));
+                leaf.vy += 0.022 * dpr - leaf.vy * 0.05 - flip * 0.035 * dpr * (0.6 + w * 0.5);
+                leaf.x += leaf.vx;
+                leaf.y += leaf.vy;
+                leaf.rot += leaf.spin + leaf.vx * 0.01;
+                const ground = layers[2](leaf.x / W) + 2 * dpr;
+                if (leaf.y >= ground) {
+                    leaf.y = ground;
+                    leaf.landed = true;
+                }
+                if (leaf.x > W + 20 * dpr || leaf.life > 20) leaves.splice(i, 1);
+            }
+        }
+
+        function drawLeaves() {
+            for (const leaf of leaves) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, leaf.alpha) * 0.9;
+                ctx.translate(leaf.x, leaf.y);
+                ctx.rotate(leaf.rot);
+                // la largeur varie quand la feuille tourne sur elle-même (effet 3D)
+                ctx.scale(1, leaf.landed ? 0.35 : 0.25 + Math.abs(Math.cos(leaf.tumble)) * 0.75);
+                const s = leaf.size;
+                ctx.fillStyle = leaf.color;
+                ctx.beginPath();
+                ctx.moveTo(-s, 0);
+                ctx.quadraticCurveTo(0, -s * 0.75, s, 0);
+                ctx.quadraticCurveTo(0, s * 0.75, -s, 0);
+                ctx.fill();
+                ctx.restore();
+            }
         }
 
         function step(advanceTime = true) {
@@ -377,14 +450,9 @@
                 const target = wind.at(g.x / dpr, t) * 0.75 + g.lean;
                 g.bend += (target - g.bend) * 0.12; // l'herbe suit le vent avec un léger retard
             }
-            for (const leaf of leaves) {
-                const w = wind.at(leaf.x / dpr, t);
-                leaf.vx += (w * 2.4 * dpr - leaf.vx) * 0.03;
-                leaf.vy += ((Math.sin(t * 1.7 + leaf.phase) * 0.4 + 0.12 - w * 0.25) * dpr - leaf.vy) * 0.05;
-                leaf.x += leaf.vx;
-                leaf.y += leaf.vy;
-                leaf.rot += leaf.spin + w * 0.02;
-                if (leaf.x > W + 12 * dpr || leaf.y > H * 0.95 || leaf.y < H * 0.1) spawnLeaf(leaf);
+            if (advanceTime) {
+                shedLeaves();
+                updateLeaves();
             }
         }
 
@@ -429,16 +497,7 @@
             }
             ctx.stroke();
 
-            for (const leaf of leaves) {
-                ctx.save();
-                ctx.translate(leaf.x, leaf.y);
-                ctx.rotate(leaf.rot);
-                ctx.fillStyle = leaf.amber ? 'rgba(232, 176, 92, 0.8)' : 'rgba(159, 211, 184, 0.65)';
-                ctx.beginPath();
-                ctx.ellipse(0, 0, leaf.size, leaf.size * 0.45, 0, 0, TAU);
-                ctx.fill();
-                ctx.restore();
-            }
+            drawLeaves();
         }
 
         function loop() {
@@ -461,10 +520,10 @@
     }
 
     const hero = document.querySelector('.hero');
-    if (hero) createLandscape(hero, { avoid: '.hero-portrait', seed: 7, spacing: 125, treeScale: 1, grassScale: 1, leaves: 10 });
+    if (hero) createLandscape(hero, { avoid: '.hero-portrait', seed: 7, spacing: 125, treeScale: 1, grassScale: 1, leaves: 45 });
     const pageHero = document.querySelector('.page-hero');
     if (pageHero) {
         const seeds = { publications: 11, collaborators: 23, teaching: 37, outreach: 41 };
-        createLandscape(pageHero, { feature: 0.86, text: 'h1', seed: seeds[document.body.dataset.page] || 5, spacing: 140, treeScale: 0.9, grassScale: 0.8, leaves: 6 });
+        createLandscape(pageHero, { feature: 0.86, text: 'h1', seed: seeds[document.body.dataset.page] || 5, spacing: 140, treeScale: 0.9, grassScale: 0.8, leaves: 30 });
     }
 })();
