@@ -1000,10 +1000,10 @@ html.lenis { scroll-behavior: auto; }
     width: 100%;
     height: clamp(150px, 24vw, 300px);
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%);
-    mask-image: linear-gradient(to bottom, transparent 0, #000 14%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 7%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 7%);
 }
-.page-hero .landscape { height: clamp(100px, 15vw, 190px); }
+.page-hero .landscape { height: clamp(130px, 21vw, 290px); }
 
 /* Vagues : trois couches décalées qui glissent en boucle */
 .waves {
