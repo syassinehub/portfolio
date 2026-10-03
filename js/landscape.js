@@ -1,14 +1,24 @@
 // ============================================
 // PAYSAGE GÉNÉRATIF — ARBRES ET HERBE DANS LE VENT
 // ============================================
-// Collines en silhouettes superposées, arbres fractals dont chaque branche plie
-// selon sa profondeur, herbe qui ondule et feuilles emportées par les rafales.
-// Le pointeur souffle du vent. Avec « réduire les animations » : une image fixe.
+// Illustration plate : collines superposées, arbres ronds (chêne, olivier) et cyprès,
+// herbe et quelques feuilles. Le vent (brise + rafales) fait plier chaque arbre
+// depuis son pied. Avec « réduire les animations » : une image fixe.
 
 (function () {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const small = window.matchMedia('(max-width: 700px)').matches;
     const TAU = Math.PI * 2;
+
+    // Couleurs pleines : menthe mélangée au vert forêt du fond (pas de superpositions translucides)
+    const FOREST = [22, 53, 42];
+    const MINT = [159, 211, 184];
+    const tone = (a) => `rgb(${FOREST.map((c, i) => Math.round(c + (MINT[i] - c) * a)).join(',')})`;
+    const COLORS = {
+        hillFar: tone(0.06), treeFar: tone(0.1),
+        hillMid: tone(0.11), treeMid: tone(0.17),
+        hillNear: tone(0.16), grass: tone(0.27),
+    };
 
     // Générateur pseudo-aléatoire reproductible (même paysage à chaque redimensionnement)
     function rng(seed) {
@@ -22,40 +32,39 @@
         };
     }
 
-    // Ligne de crête : somme de sinusoïdes
+    // Ligne de crête : somme de sinusoïdes douces
     function ridge(rand, base, amp) {
-        const waves = Array.from({ length: 4 }, (_, i) => ({
-            f: (0.6 + rand() * 1.4) * (i + 1),
+        const waves = Array.from({ length: 3 }, (_, i) => ({
+            f: (0.5 + rand()) * (i + 1),
             p: rand() * TAU,
-            a: amp / (i + 1.4),
+            a: amp / (i + 1.3),
         }));
         return (x) => base - waves.reduce((sum, w) => sum + Math.sin(x * w.f * TAU + w.p) * w.a, 0);
     }
 
-    // Arbre fractal : structure générée une fois, seule la flexion est recalculée
-    function growBranch(rand, depth, maxDepth, length, angle) {
-        const branch = { length, angle, depth, flex: 0.6 + rand() * 0.8, phase: rand() * TAU, children: [] };
-        if (depth < maxDepth) {
-            const count = rand() < 0.25 && depth > 1 ? 3 : 2;
-            for (let i = 0; i < count; i++) {
-                const spread = (0.28 + rand() * 0.32) * (i === 0 ? -1 : i === 1 ? 1 : (rand() - 0.5));
-                branch.children.push(growBranch(rand, depth + 1, maxDepth, length * (0.68 + rand() * 0.14), spread));
-            }
-        }
-        return branch;
+    // Couronne d'un arbre rond : quelques disques qui forment un dôme
+    function makeCrown(rand) {
+        const lobes = [[0, 0, 1], [-0.58, 0.18, 0.72], [0.58, 0.16, 0.74], [-0.28, -0.42, 0.66], [0.3, -0.4, 0.64]];
+        return lobes.map(([dx, dy, r]) => ({
+            dx: dx + (rand() - 0.5) * 0.12,
+            dy: dy + (rand() - 0.5) * 0.1,
+            r: r * (0.92 + rand() * 0.16),
+            phase: rand() * TAU,
+        }));
     }
 
     function createLandscape(host, opts) {
         const canvas = document.createElement('canvas');
         canvas.className = 'landscape';
         canvas.setAttribute('aria-hidden', 'true');
-        host.prepend(canvas);
+        // au-dessus du courant d'eau (js/nature.js), sous le texte
+        const flow = host.querySelector('.flow');
+        if (flow) flow.after(canvas);
+        else host.prepend(canvas);
         const ctx = canvas.getContext('2d');
         const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-        const seed = opts.seed;
 
-        let W = 0, H = 0, layers = [], trees = [], grass = [], leaves = [], hills = null;
-        let t = 0, gust = 0, onScreen = true, lastPointerX = null;
+        let W = 0, H = 0, layers = [], trees = [], grass = [], leaves = [], t = 0, onScreen = true;
 
         function build() {
             const rect = canvas.getBoundingClientRect();
@@ -63,145 +72,135 @@
             H = Math.max(1, Math.round(rect.height * dpr));
             canvas.width = W;
             canvas.height = H;
-            const rand = rng(seed);
+            const rand = rng(opts.seed);
 
-            // Trois plans de collines, du plus lointain au plus proche
             layers = [
-                { y: ridge(rand, H * 0.42, H * 0.12), color: 'rgba(159, 211, 184, 0.05)' },
-                { y: ridge(rand, H * 0.62, H * 0.1), color: 'rgba(159, 211, 184, 0.08)' },
-                { y: ridge(rand, H * 0.84, H * 0.05), color: 'rgba(159, 211, 184, 0.12)' },
+                { y: ridge(rand, H * 0.5, H * 0.1), color: COLORS.hillFar },
+                { y: ridge(rand, H * 0.68, H * 0.08), color: COLORS.hillMid },
+                { y: ridge(rand, H * 0.86, H * 0.04), color: COLORS.hillNear },
             ];
             const yAt = (layer, px) => layers[layer].y(px / W);
 
-            // Arbres : quelques-uns sur le plan lointain (petits, pâles), d'autres au milieu
-            // Zone à laisser libre (la photo de l'accueil) si elle chevauche le paysage
+            // Zone laissée libre (photo de l'accueil) si elle chevauche le paysage
             let avoid = null;
             const avoidEl = opts.avoid && host.querySelector(opts.avoid);
             if (avoidEl) {
                 const r = avoidEl.getBoundingClientRect();
-                if (r.bottom > rect.top && r.top < rect.bottom) {
-                    avoid = [(r.left - rect.left - 40) * dpr, (r.right - rect.left + 40) * dpr];
-                }
+                if (r.bottom > rect.top && r.top < rect.bottom) avoid = [(r.left - rect.left - 30) * dpr, (r.right - rect.left + 30) * dpr];
             }
 
             trees = [];
-            const unit = H / 230;
-            const count = Math.max(3, Math.round((W / dpr) / (small ? 110 : opts.spacing)));
+            const count = Math.max(3, Math.round((W / dpr) / (small ? 85 : opts.spacing)));
             for (let i = 0; i < count; i++) {
-                const far = rand() < 0.4;
-                const x = ((i + 0.2 + rand() * 0.6) / count) * W;
+                const far = rand() < 0.45;
+                const x = ((i + 0.15 + rand() * 0.7) / count) * W;
+                const cypress = rand() < 0.35;
+                const crown = makeCrown(rand);
+                const phase = rand() * TAU;
+                const sizeRand = rand();
                 if (avoid && x > avoid[0] && x < avoid[1]) continue;
-                const layer = far ? 0 : 1;
-                const scale = (far ? 0.45 + rand() * 0.2 : 0.7 + rand() * 0.45) * unit * opts.treeScale;
-                const maxDepth = small ? 6 : far ? 6 : 7 + (rand() < 0.4 ? 1 : 0);
-                trees.push({
-                    x,
-                    y: yAt(layer, x) + 2 * dpr,
-                    far,
-                    width: (far ? 3 : 5.5) * scale * dpr,
-                    crown: (far ? 2.6 : 3.6) * scale * dpr,
-                    root: growBranch(rand, 0, maxDepth, 34 * scale * dpr, (rand() - 0.5) * 0.12),
-                    color: far ? 'rgba(159, 211, 184, 0.10)' : 'rgba(159, 211, 184, 0.17)',
-                });
+                const base = yAt(far ? 0 : 1, x) + 3 * dpr;
+                // hauteur plafonnée : la cime reste toujours dans le cadre
+                const room = base - H * 0.16;
+                const wanted = (far ? 0.2 + sizeRand * 0.1 : 0.36 + sizeRand * 0.2) * H * opts.treeScale;
+                const h = Math.min(wanted * (cypress ? 1.15 : 1), room);
+                trees.push({ x, base, h, far, cypress, crown, phase, color: far ? COLORS.treeFar : COLORS.treeMid });
             }
             trees.sort((a, b) => (a.far === b.far ? 0 : a.far ? -1 : 1));
 
-            // Herbe sur le premier plan
             grass = [];
-            const blades = Math.round((W / dpr) / (small ? 5 : 3.2));
+            const blades = Math.round((W / dpr) / (small ? 6 : 4));
             for (let i = 0; i < blades; i++) {
                 const x = rand() * W;
-                grass.push({ x, y: yAt(2, x) + 3 * dpr, h: (8 + rand() * 18) * dpr * opts.grassScale, lean: (rand() - 0.5) * 0.4, phase: rand() * TAU });
+                grass.push({ x, y: yAt(2, x) + 3 * dpr, h: (6 + rand() * 12) * dpr * opts.grassScale, lean: (rand() - 0.5) * 0.3, phase: rand() * TAU });
             }
 
-            // Feuilles portées par le vent
-            leaves = Array.from({ length: small ? 8 : opts.leaves }, () => spawnLeaf({}, rand, true));
-            hills = null; // collines redessinées dans le cache au prochain rendu
+            leaves = Array.from({ length: small ? 5 : opts.leaves }, () => spawnLeaf({}, rand, true));
         }
 
         function spawnLeaf(leaf, rand = Math.random, anywhere = false) {
-            leaf.x = anywhere ? rand() * W : -20 * dpr;
-            leaf.y = rand() * H * 0.7;
-            leaf.vx = (0.6 + rand()) * dpr;
-            leaf.vy = 0;
+            leaf.x = anywhere ? rand() * W : -12 * dpr;
+            leaf.y = H * (0.25 + rand() * 0.45);
+            leaf.vx = (0.5 + rand() * 0.6) * dpr;
             leaf.rot = rand() * TAU;
-            leaf.spin = (rand() - 0.5) * 0.08;
-            leaf.size = (2.5 + rand() * 2.5) * dpr;
+            leaf.spin = (rand() - 0.5) * 0.05;
+            leaf.size = (2.2 + rand() * 1.8) * dpr;
             leaf.phase = rand() * TAU;
             leaf.amber = rand() < 0.3;
             return leaf;
         }
 
-        // Collines : statiques, rendues une fois dans un canvas hors écran
-        function renderHills() {
-            hills = document.createElement('canvas');
-            hills.width = W;
-            hills.height = H;
-            const h = hills.getContext('2d');
-            layers.forEach((layer) => {
-                h.fillStyle = layer.color;
-                h.beginPath();
-                h.moveTo(0, H);
-                for (let x = 0; x <= W; x += 8) h.lineTo(x, layer.y(x / W));
-                h.lineTo(W, H);
-                h.closePath();
-                h.fill();
-            });
-        }
-
-        // Vent : brise lente + rafales (somme de sinusoïdes) + souffle du pointeur
+        // Vent : brise lente + rafales qui traversent le paysage de gauche à droite
         const windAt = (x) => {
-            const base = 0.35 + Math.sin(t * 0.37 + x * 0.0009) * 0.25 + Math.sin(t * 0.83 + x * 0.0021) * 0.15;
-            const gustWave = Math.max(0, Math.sin(t * 0.21 - x * 0.0006)) ** 6 * 0.6;
-            return base + gustWave + gust;
+            const breeze = 0.3 + Math.sin(t * 0.35 + x * 0.0008) * 0.18 + Math.sin(t * 0.9 + x * 0.002) * 0.08;
+            const gust = Math.max(0, Math.sin(t * 0.18 - x * 0.0005)) ** 8 * 0.55;
+            return breeze + gust;
         };
 
-        function drawTree(tree) {
-            const wind = windAt(tree.x);
-            const segments = [];
-            const tips = [];
-            (function walk(b, x, y, angle) {
-                // plus la branche est fine (profonde), plus elle plie
-                const sway = wind * 0.05 * b.flex * (b.depth + 1) * (tree.far ? 0.7 : 1)
-                    + Math.sin(t * 2.4 + b.phase) * 0.012 * b.depth;
-                const a = angle + b.angle + sway;
-                const x2 = x + Math.sin(a) * b.length;
-                const y2 = y - Math.cos(a) * b.length;
-                (segments[b.depth] ||= []).push(x, y, x2, y2);
-                if (!b.children.length) tips.push(x2, y2);
-                b.children.forEach((c) => walk(c, x2, y2, a));
-            })(tree.root, tree.x, tree.y, 0);
+        // Décalage horizontal à une hauteur donnée : l'arbre plie depuis son pied
+        const bendAt = (tree, wind, up) => wind * tree.h * (tree.cypress ? 0.09 : 0.07) * (up / tree.h) ** 1.8;
 
-            ctx.strokeStyle = tree.color;
-            ctx.fillStyle = tree.color;
-            ctx.lineCap = 'round';
-            segments.forEach((list, depth) => {
-                ctx.lineWidth = Math.max(0.6 * dpr, tree.width * 0.7 ** depth);
-                ctx.beginPath();
-                for (let i = 0; i < list.length; i += 4) {
-                    ctx.moveTo(list[i], list[i + 1]);
-                    ctx.lineTo(list[i + 2], list[i + 3]);
-                }
-                ctx.stroke();
-            });
-            // feuillage : petites touffes aux extrémités
+        function drawRoundTree(tree, wind) {
+            const { x, base, h } = tree;
+            const trunkTop = h * 0.62;
+            const tw = Math.max(1.5 * dpr, h * 0.055);
+            const R = h * 0.27;
+            const cy = h * 0.66;
             ctx.beginPath();
-            for (let i = 0; i < tips.length; i += 2) {
-                ctx.moveTo(tips[i] + tree.crown, tips[i + 1]);
-                ctx.arc(tips[i], tips[i + 1], tree.crown, 0, TAU);
+            // tronc (sens horaire) — légèrement évasé au pied
+            ctx.moveTo(x - tw * 0.75, base);
+            ctx.lineTo(x - tw * 0.4 + bendAt(tree, wind, trunkTop), base - trunkTop);
+            ctx.lineTo(x + tw * 0.4 + bendAt(tree, wind, trunkTop), base - trunkTop);
+            ctx.lineTo(x + tw * 0.75, base);
+            ctx.closePath();
+            // couronne : disques fusionnés en une seule silhouette
+            for (const lobe of tree.crown) {
+                const up = cy - lobe.dy * R;
+                const flutter = Math.sin(t * 2.2 + lobe.phase + tree.phase) * R * 0.025 * (0.5 + wind);
+                const lx = x + lobe.dx * R + bendAt(tree, wind, up) + flutter;
+                const ly = base - up;
+                ctx.moveTo(lx + lobe.r * R, ly);
+                ctx.arc(lx, ly, lobe.r * R, 0, TAU);
             }
+            ctx.fill('nonzero');
+        }
+
+        function drawCypress(tree, wind) {
+            const { x, base, h } = tree;
+            const halfW = h * 0.1;
+            const steps = 14;
+            const left = [];
+            const right = [];
+            for (let i = 0; i <= steps; i++) {
+                const k = i / steps;
+                const up = h * (0.05 + k * 0.95);
+                // silhouette en flamme : large en bas, pointue en haut
+                const w = halfW * Math.pow(Math.sin(Math.PI * Math.min(1, 0.12 + k * 0.92)), 0.55) * (1 - 0.25 * k);
+                const cx = x + bendAt(tree, wind, up) + Math.sin(t * 2 + tree.phase + k * 3) * w * 0.04;
+                left.push([cx - w, base - up]);
+                right.push([cx + w, base - up]);
+            }
+            const tw = Math.max(1.2 * dpr, h * 0.025);
+            ctx.beginPath();
+            ctx.moveTo(x - tw, base);
+            ctx.lineTo(x - tw, base - h * 0.06);
+            left.forEach(([px, py]) => ctx.lineTo(px, py));
+            right.reverse().forEach(([px, py]) => ctx.lineTo(px, py));
+            ctx.lineTo(x + tw, base - h * 0.06);
+            ctx.lineTo(x + tw, base);
+            ctx.closePath();
             ctx.fill();
         }
 
         function drawGrass() {
-            ctx.strokeStyle = 'rgba(159, 211, 184, 0.22)';
-            ctx.lineWidth = 1.1 * dpr;
+            ctx.strokeStyle = COLORS.grass;
+            ctx.lineWidth = 1.2 * dpr;
             ctx.lineCap = 'round';
             ctx.beginPath();
             for (const g of grass) {
-                const bend = (windAt(g.x) * 0.9 + Math.sin(t * 3 + g.phase) * 0.12 + g.lean) * g.h;
+                const bend = (windAt(g.x) * 0.7 + Math.sin(t * 2.6 + g.phase) * 0.08 + g.lean) * g.h;
                 ctx.moveTo(g.x, g.y);
-                ctx.quadraticCurveTo(g.x + bend * 0.3, g.y - g.h * 0.6, g.x + bend, g.y - g.h + Math.abs(bend) * 0.25);
+                ctx.quadraticCurveTo(g.x + bend * 0.25, g.y - g.h * 0.6, g.x + bend, g.y - g.h + Math.abs(bend) * 0.2);
             }
             ctx.stroke();
         }
@@ -210,17 +209,16 @@
             for (const leaf of leaves) {
                 if (step) {
                     const wind = windAt(leaf.x);
-                    leaf.vx += (wind * 2.2 * dpr - leaf.vx) * 0.02;
-                    leaf.vy = Math.sin(t * 2 + leaf.phase) * 0.5 * dpr + 0.15 * dpr;
+                    leaf.vx += (wind * 1.8 * dpr - leaf.vx) * 0.02;
                     leaf.x += leaf.vx;
-                    leaf.y += leaf.vy;
-                    leaf.rot += leaf.spin + wind * 0.02;
-                    if (leaf.x > W + 20 * dpr || leaf.y > H) spawnLeaf(leaf);
+                    leaf.y += Math.sin(t * 1.8 + leaf.phase) * 0.35 * dpr + 0.08 * dpr;
+                    leaf.rot += leaf.spin + wind * 0.015;
+                    if (leaf.x > W + 12 * dpr || leaf.y > H * 0.95) spawnLeaf(leaf);
                 }
                 ctx.save();
                 ctx.translate(leaf.x, leaf.y);
                 ctx.rotate(leaf.rot);
-                ctx.fillStyle = leaf.amber ? 'rgba(232, 176, 92, 0.75)' : 'rgba(159, 211, 184, 0.6)';
+                ctx.fillStyle = leaf.amber ? 'rgba(232, 176, 92, 0.8)' : 'rgba(159, 211, 184, 0.65)';
                 ctx.beginPath();
                 ctx.ellipse(0, 0, leaf.size, leaf.size * 0.45, 0, 0, TAU);
                 ctx.fill();
@@ -229,10 +227,28 @@
         }
 
         function render(step = true) {
-            if (!hills) renderHills();
             ctx.clearRect(0, 0, W, H);
-            ctx.drawImage(hills, 0, 0);
-            trees.forEach(drawTree);
+            // plan lointain, arbres lointains, plan médian, arbres proches, premier plan
+            const drawLayer = (i) => {
+                ctx.fillStyle = layers[i].color;
+                ctx.beginPath();
+                ctx.moveTo(0, H);
+                for (let x = 0; x <= W; x += 6) ctx.lineTo(x, layers[i].y(x / W));
+                ctx.lineTo(W, H);
+                ctx.closePath();
+                ctx.fill();
+            };
+            const drawTrees = (far) => trees.filter((tr) => tr.far === far).forEach((tree) => {
+                ctx.fillStyle = tree.color;
+                const wind = windAt(tree.x);
+                if (tree.cypress) drawCypress(tree, wind);
+                else drawRoundTree(tree, wind);
+            });
+            drawLayer(0);
+            drawTrees(true);
+            drawLayer(1);
+            drawTrees(false);
+            drawLayer(2);
             drawGrass();
             drawLeaves(step);
         }
@@ -241,16 +257,8 @@
             requestAnimationFrame(loop);
             if (!onScreen || document.hidden) return;
             t += 1 / 60;
-            gust *= 0.96;
             render();
         }
-
-        // Le pointeur qui balaie l'en-tête crée une rafale
-        host.addEventListener('pointermove', (e) => {
-            if (lastPointerX !== null) gust = Math.max(-0.6, Math.min(1.2, gust + (e.clientX - lastPointerX) * 0.004));
-            lastPointerX = e.clientX;
-        }, { passive: true });
-        host.addEventListener('pointerleave', () => { lastPointerX = null; });
 
         let resizeTimer;
         new ResizeObserver(() => {
@@ -261,7 +269,7 @@
 
         build();
         if (reduceMotion) {
-            t = 4;
+            t = 3;
             render(false);
         } else {
             loop();
@@ -269,10 +277,10 @@
     }
 
     const hero = document.querySelector('.hero');
-    if (hero) createLandscape(hero, { avoid: '.hero-portrait', seed: 7, spacing: 150, treeScale: 1.15, grassScale: 1, leaves: 16 });
+    if (hero) createLandscape(hero, { avoid: '.hero-portrait', seed: 7, spacing: 120, treeScale: 1, grassScale: 1, leaves: 10 });
     const pageHero = document.querySelector('.page-hero');
     if (pageHero) {
         const seeds = { publications: 11, collaborators: 23, teaching: 37, outreach: 41 };
-        createLandscape(pageHero, { seed: seeds[document.body.dataset.page] || 5, spacing: 190, treeScale: 0.8, grassScale: 0.8, leaves: 10 });
+        createLandscape(pageHero, { seed: seeds[document.body.dataset.page] || 5, spacing: 140, treeScale: 0.9, grassScale: 0.8, leaves: 6 });
     }
 })();

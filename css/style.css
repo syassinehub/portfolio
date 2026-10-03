@@ -1000,6 +1000,8 @@ html.lenis { scroll-behavior: auto; }
     width: 100%;
     height: clamp(150px, 24vw, 300px);
     pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 14%);
 }
 .page-hero .landscape { height: clamp(100px, 15vw, 190px); }
 
